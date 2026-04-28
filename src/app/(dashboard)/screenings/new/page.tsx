@@ -43,9 +43,6 @@ function VariantPreview({ inputs }: { inputs: string[] }) {
 
 const JURISDICTIONS = [
   { value: "LV", label: "Latvia" },
-  { value: "EE", label: "Estonia" },
-  { value: "LT", label: "Lithuania" },
-  { value: "EU", label: "Other EU" },
 ];
 
 export default function NewScreeningPage() {
