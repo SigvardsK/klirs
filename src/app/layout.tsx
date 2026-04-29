@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AML Screening Portal",
-  description: "Automated KYC/AML compliance screening across international databases",
+  title: "Klirs — Audit-ready AML screening",
+  description: "Audit-ready AML/KYC screening for Latvian and EU compliance. Open-source engine, hosted at klirs.eu.",
 };
 
 export default function RootLayout({

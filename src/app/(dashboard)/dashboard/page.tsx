@@ -141,7 +141,7 @@ export default async function DashboardPage() {
                   </p>
                   <div className="flex items-center gap-4">
                     <a
-                      href="https://github.com/SigvardsK/eu-aml-screening/issues/new"
+                      href="https://github.com/SigvardsK/klirs/issues/new"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center text-sm text-emerald-400 hover:text-emerald-300 font-medium"

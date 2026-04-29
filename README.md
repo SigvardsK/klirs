@@ -1,9 +1,9 @@
 <div align="center">
 
-# eu-aml-screening
+# Klirs
 
-**LV-deep AML/KYC screening with EU-consolidated sanctions.**
-Open-source, self-hostable, audit-ready.
+**Audit-ready AML/KYC screening for Latvian and EU compliance.**
+Open-source engine · Self-hostable · AGPL-3.0
 
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](./LICENSE)
 [![Sources](https://img.shields.io/badge/sources-7-success.svg)](#coverage)
@@ -12,7 +12,11 @@ Open-source, self-hostable, audit-ready.
 
 [Quick start](#quick-start) · [Coverage](#coverage) · [Scope](#scope) · [Roadmap](#roadmap) · [Self-host](#production-deployment)
 
+**Hosted (managed) version:** [klirs.eu](https://klirs.eu) — multi-seat, retained audit log, evidence bundles. Currently in productization.
+
 </div>
+
+> **Why open source for compliance?** AGPL-3.0 means you can read, run, and audit every line of the engine that produced your evidence. No vendor can hide a sanctions-list omission behind a black box — and the dual-affirmative classifier (`clear` requires positive proof) makes silent false-clears a contract violation, not a quiet bug.
 
 ---
 
@@ -130,8 +134,8 @@ User → /screenings/new (form with live VariantPreview)
 ### Setup
 
 ```bash
-git clone https://github.com/SigvardsK/eu-aml-screening.git
-cd eu-aml-screening
+git clone https://github.com/SigvardsK/klirs.git
+cd klirs
 npm install
 
 # Apply the Supabase schema (3 tables + RLS + storage bucket)
@@ -211,7 +215,7 @@ What's **not** covered today: jurisdiction-specific PEP / registry / official-de
 
 ## Roadmap
 
-Tracked as [GitHub Issues](https://github.com/SigvardsK/eu-aml-screening/issues). No timelines — community PRs welcome.
+Tracked as [GitHub Issues](https://github.com/SigvardsK/klirs/issues). No timelines — community PRs welcome.
 
 - 🇪🇪 **Estonia coverage** — e-äriregister (registry) + EE PEP / officials' declarations source
 - 🇱🇹 **Lithuania coverage** — equivalent registry + PEP sources
@@ -220,7 +224,7 @@ Tracked as [GitHub Issues](https://github.com/SigvardsK/eu-aml-screening/issues)
 - **Non-LV annex schemas** — currently only the Latvian Bar Association annex set is generated
 - **Wider jurisdiction dropdown** — gated on the source integrations above shipping first
 
-A hosted (managed) version is in productization — until it ships, self-host or [open an issue](https://github.com/SigvardsK/eu-aml-screening/issues/new) to be notified.
+The hosted (managed) version is being built at [klirs.eu](https://klirs.eu) — until it ships, self-host or [open an issue](https://github.com/SigvardsK/klirs/issues/new) to be notified.
 
 ---
 

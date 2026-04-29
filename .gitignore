@@ -51,3 +51,6 @@ supabase/.temp/
 # Red-team harness local state (contains Supabase session tokens + run artefacts)
 /scripts/red-team/auth.json
 /scripts/red-team/runs/
+
+# Internal Sprint planning + strategy docs (BRAND, pricing, outreach drafts, prospect notes — not for public repo)
+/docs/sprint-2/
