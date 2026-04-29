@@ -54,3 +54,6 @@ supabase/.temp/
 
 # Internal Sprint planning + strategy docs (BRAND, pricing, outreach drafts, prospect notes — not for public repo)
 /docs/sprint-2/
+
+# Internal Claude orientation file (private wayfinding — not for public repo; AGENTS.md is the public contributor guide)
+/CLAUDE.md
