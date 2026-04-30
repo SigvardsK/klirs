@@ -1,12 +1,12 @@
 import type { Screening } from "@/lib/types";
 
 /**
- * The three annex variants aml-demo can produce.
+ * The three annex variants Klirs can produce.
  *
  * Numbering maps to the Latvian Bar Association's Instrukcija NILLTPFN-SL
  * (published on advokatura.lv). P3.1/P3.2 are client-signed sanctions
  * declarations; P2 is the lawyer-authored client risk assessment.
- * aml-demo produces them as SAGATAVE — pre-filled drafts the advocate
+ * Klirs produces them as SAGATAVE — pre-filled drafts the advocate
  * reviews, completes, and (for P3.x) has the client sign.
  */
 export type AnnexVariant = "p2" | "p3_1" | "p3_2";

@@ -9,7 +9,7 @@
  * Every form is labelled SAGATAVE — the advocate must review, complete, and
  * (for P3.x) collect the client's signature before filing. Client-signed
  * blocks stay blank. Pre-filled rows are highlighted so the reviewer can
- * audit at a glance what aml-demo asserted vs. what still needs manual work.
+ * audit at a glance what Klirs asserted vs. what still needs manual work.
  *
  * Layout strategy (2026-04-24): field-blocks are rendered as HTML tables
  * (`field-table`) rather than flex divs. Tables are the one layout primitive
@@ -407,7 +407,7 @@ interface P2Row {
   nr: string;
   text: string;        // LV row text
   category: "Augsts" | "Risku paaugstinošs" | "Risku pazeminošs";
-  prefill?: "yes" | "no"; // if aml-demo can assert
+  prefill?: "yes" | "no"; // if Klirs can assert
   comment?: string;
 }
 

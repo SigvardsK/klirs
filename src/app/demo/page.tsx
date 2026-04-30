@@ -10,7 +10,7 @@ export default function DemoPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Shield className="w-6 h-6 text-emerald-500" />
-            <span className="text-lg font-semibold text-white">AML Screening</span>
+            <span className="text-lg font-semibold text-white">Klirs</span>
           </div>
           <Link
             href="/login"

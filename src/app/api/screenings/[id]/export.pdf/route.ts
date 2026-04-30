@@ -100,7 +100,7 @@ export async function GET(
       printBackground: true,
       margin: { top: "15mm", bottom: "18mm", left: "12mm", right: "12mm" },
       displayHeaderFooter: true,
-      headerTemplate: `<div style="font-size: 8px; color: #64748b; width: 100%; text-align: center;">AML Screening Report — ${escapeHtml(screening.entity_name)}</div>`,
+      headerTemplate: `<div style="font-size: 8px; color: #64748b; width: 100%; text-align: center;">Klirs — AML Screening Report — ${escapeHtml(screening.entity_name)}</div>`,
       footerTemplate: `<div style="font-size: 8px; color: #64748b; width: 100%; text-align: center;">Page <span class="pageNumber"></span> of <span class="totalPages"></span> · Generated <span>${new Date().toISOString()}</span></div>`,
     });
 
@@ -224,7 +224,7 @@ function buildPrintHtml({ screening, checks, risk, screenshotUrl }: BuildInput):
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>AML Screening Report — ${escapeHtml(screening.entity_name)}</title>
+  <title>Klirs — AML Screening Report — ${escapeHtml(screening.entity_name)}</title>
   <style>
     @page { size: A4; margin: 0; }
     * { box-sizing: border-box; }
@@ -293,7 +293,7 @@ function buildPrintHtml({ screening, checks, risk, screenshotUrl }: BuildInput):
   <header class="cover">
     <div class="title">
       <div>
-        <h1>AML Screening Report</h1>
+        <h1>Klirs — AML Screening Report</h1>
         <div class="subtitle">${escapeHtml(screening.entity_name)} · ${escapeHtml(screening.entity_type === "company" ? "Company" : "Individual")} · ${escapeHtml(screening.jurisdiction)}</div>
       </div>
       <div style="text-align:right;">

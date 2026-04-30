@@ -5,7 +5,7 @@
  * UI shots referenced from README.md into public/screenshots/.
  *
  * Usage:
- *   BASE_URL=https://aml-demo-production.up.railway.app npx tsx scripts/capture-readme-shots.ts
+ *   BASE_URL=https://klirs.eu npx tsx scripts/capture-readme-shots.ts
  *
  * If auth fails: run `BASE_URL=... npm run red-team:auth` first.
  *
@@ -25,7 +25,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "..");
 const AUTH_PATH = resolve(REPO, "scripts/red-team/auth.json");
 const OUT_DIR = resolve(REPO, "public/screenshots");
-const BASE_URL = process.env.BASE_URL || "https://aml-demo-production.up.railway.app";
+const BASE_URL = process.env.BASE_URL || "https://klirs.eu";
 const HERO_NAME = process.env.HERO_NAME || "Pjotrs Avens";
 
 if (!existsSync(AUTH_PATH)) {

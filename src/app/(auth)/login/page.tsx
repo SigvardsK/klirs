@@ -30,7 +30,7 @@ function LoginContent() {
         {/* Logo */}
         <div className="flex items-center justify-center gap-3 mb-8">
           <Shield className="w-8 h-8 text-emerald-500" />
-          <span className="text-2xl font-bold text-white">AML Screening</span>
+          <span className="text-2xl font-bold text-white">Klirs</span>
         </div>
 
         {/* Card */}

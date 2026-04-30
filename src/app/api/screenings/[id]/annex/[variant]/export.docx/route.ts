@@ -1,6 +1,6 @@
 /**
  * Annex DOCX export — converts the same HTML the preview/PDF routes render
- * into a .docx file so advocates can edit fields that aml-demo couldn't
+ * into a .docx file so advocates can edit fields that Klirs couldn't
  * pre-fill cleanly (e.g. the LV/EE/LT/EU-only jurisdiction dropdown).
  *
  * Uses html-to-docx (pure JS, no native deps) — preserves tables, inline
