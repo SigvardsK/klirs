@@ -57,3 +57,7 @@ supabase/.temp/
 
 # Internal Claude orientation file (private wayfinding — not for public repo; AGENTS.md is the public contributor guide)
 /CLAUDE.md
+
+# Transient i18n translation artifacts (regenerable via scripts/translate-passages.py)
+/src/lib/i18n/messages/lv.draft.json
+/src/lib/i18n/messages/lv.draft.review.md

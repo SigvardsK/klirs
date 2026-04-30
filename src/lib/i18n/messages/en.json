@@ -1,0 +1,49 @@
+{
+  "common": {
+    "brand": "Klirs",
+    "signIn": "Sign in",
+    "github": "GitHub",
+    "agpl": "AGPL-3.0"
+  },
+  "hero": {
+    "eyebrow": "Open-source AML/KYC screening · AGPL-3.0",
+    "title": "Audit-ready AML screening, engineered to refuse silent false-clears.",
+    "subhead": "Klirs is an open-source screening engine for Latvian and EU compliance buyers. Every verdict carries timestamped source-page screenshots, a transparent risk score, and pre-filled Latvian Bar Association annexes. Hosted version launches late May.",
+    "ctaPrimary": "Book a 20-min demo",
+    "ctaSecondary": "Read the engine on GitHub"
+  },
+  "audit": {
+    "title": "Read every line that produced your evidence.",
+    "quote": "Read, run, and audit every line that produced your evidence. No vendor can hide a sanctions-list omission behind a black box.",
+    "body": "Klirs is licensed under <strong>AGPL-3.0</strong>. The dual-affirmative classifier means a <code>clear</code> verdict requires positive proof from the source page — silent false-clears on sanctioned entities are a contract violation, not a quiet bug. Proprietary competitors structurally cannot make this claim."
+  },
+  "features": {
+    "title": "What every screening produces.",
+    "evidenceTitle": "Audit-grade evidence bundle",
+    "evidenceBody": "Viewport screenshot + source URL for every check. Exported as a PDF + DOCX bundle a regulator will accept 18 months later.",
+    "coverageTitle": "Multi-source coverage",
+    "coverageBody": "OFAC SDN, UK Sanctions, EU/UN/AU consolidated, Latvian PEP / officials’ declarations, Latvian Business Register, multilingual adverse media (LV / EN / RU / ET).",
+    "annexTitle": "Pre-filled Bar annexes",
+    "annexBody": "P2 / P3.1 / P3.2 templates from the Latvian Bar Association, auto-populated from each verdict. Drop straight into your client file."
+  },
+  "demoVideo": {
+    "title": "See it in action.",
+    "body": "A 90-second walkthrough of an end-to-end screening — entity input through evidence-bundle export.",
+    "placeholder": "Demo video — coming soon"
+  },
+  "cta": {
+    "title": "Hosted version launches late May.",
+    "body": "We’re running pilot calls with LV/EU compliance buyers through 2026-05-08 to lock pricing on a hybrid seat + per-screening pack model. Book a 20-minute demo and we’ll talk specifics for your firm.",
+    "button": "Book a 20-min demo"
+  },
+  "footer": {
+    "tagline": "Klirs — open-source AML screening",
+    "license": "AGPL-3.0"
+  },
+  "metadata": {
+    "title": "Klirs — Audit-ready AML screening",
+    "description": "Audit-ready AML/KYC screening for Latvian and EU compliance. Open-source engine, hosted at klirs.eu."
+  },
+  "screening": {},
+  "annex": {}
+}

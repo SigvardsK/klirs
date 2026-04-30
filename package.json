@@ -4,9 +4,10 @@
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run check:i18n && next build",
     "start": "next start",
     "lint": "eslint",
+    "check:i18n": "npx tsx scripts/check-i18n.ts",
     "smoke:sanctioned": "npx tsx scripts/smoke-test-sanctioned.ts",
     "red-team:auth": "npx tsx scripts/red-team/auth-setup.ts",
     "red-team:run": "npx tsx scripts/red-team/run-cases.ts"
@@ -21,6 +22,7 @@
     "html-to-docx": "^1.8.0",
     "lucide-react": "^1.8.0",
     "next": "16.2.3",
+    "next-intl": "^4.11.0",
     "playwright": "^1.59.1",
     "playwright-extra": "^4.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",

@@ -29,14 +29,17 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Allow access to marketing page, login, auth callback, demo, and API health check
+  const pathname = request.nextUrl.pathname;
+  const isMarketingPath = pathname === "/" || /^\/lv(\/.*)?$/.test(pathname);
+
+  // Allow access to marketing page (any locale), login, auth callback, demo, and API health check
   const isPublicRoute =
-    request.nextUrl.pathname === "/" ||
-    request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/auth") ||
-    request.nextUrl.pathname.startsWith("/demo") ||
-    request.nextUrl.pathname === "/api/health" ||
-    request.nextUrl.pathname.startsWith("/api/test");
+    isMarketingPath ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/demo") ||
+    pathname === "/api/health" ||
+    pathname.startsWith("/api/test");
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
@@ -44,12 +47,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from marketing page and login page → /dashboard
-  if (
-    user &&
-    (request.nextUrl.pathname === "/" ||
-      request.nextUrl.pathname.startsWith("/login"))
-  ) {
+  // Redirect authenticated users away from marketing page (any locale) and login page → /dashboard
+  if (user && (isMarketingPath || pathname.startsWith("/login"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
