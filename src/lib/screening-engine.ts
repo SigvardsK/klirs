@@ -27,6 +27,7 @@ chromium.use(StealthPlugin());
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SEARCHABLE_DATABASES, ADVERSE_MEDIA_CONFIG, COMPANY_REGISTRY_CONFIG, type DbConfig } from "./db-configs";
 import { expandLvVariants } from "./name-variants";
+import { detectAdversarialInput, adversarialReason } from "./adversarial-input";
 import type { Person } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -292,7 +293,7 @@ export async function runScreening(job: ScreeningJob): Promise<void> {
           // DDG's "No results" indicator → clear; otherwise → uncertain (human review of
           // the search results screenshot required). Defaulting to clear here is the
           // exact failure mode the load-bearing classifier contract exists to prevent.
-          const adverseMediaResult = classifyResult(pageText || "", ADVERSE_MEDIA_CONFIG);
+          const adverseMediaResult = classifyResult(pageText || "", ADVERSE_MEDIA_CONFIG, personName);
           await supabase.from("screening_checks").insert({
             screening_id: job.screeningId,
             database_name: `Adverse Media (${lang})`,
@@ -679,11 +680,29 @@ const PAGE_TEXT_EXCERPT_CHARS = 2000;
  */
 export function classifyResult(
   pageText: string,
-  db: Pick<DbConfig, "noResultsIndicator" | "hitIndicator" | "hitIndicatorPattern">
+  db: Pick<DbConfig, "noResultsIndicator" | "hitIndicator" | "hitIndicatorPattern">,
+  // The exact string queried against the source. When provided, the classifier
+  // checks for adversarial input classes (Cyrillic, abbreviated initials,
+  // hyphen/apostrophe) the engine cannot yet canonicalise. If detected AND
+  // the source returned its no-results indicator, the verdict is upgraded
+  // from `clear` to `uncertain` so a reviewer confirms manually. See
+  // src/lib/adversarial-input.ts and docs/sprint-2/PHONETIC-AUDIT.md for the
+  // rationale (LR-WS-2026-029 contract repair pending B6 P0 transformers).
+  searchTerm?: string,
 ): CheckResult {
   const text = pageText.toLowerCase();
   const excerpt = pageText.slice(0, PAGE_TEXT_EXCERPT_CHARS);
   if (db.noResultsIndicator && text.includes(db.noResultsIndicator.toLowerCase())) {
+    if (searchTerm) {
+      const adversarial = detectAdversarialInput(searchTerm);
+      if (adversarial.isAdversarial) {
+        return {
+          status: "uncertain",
+          reason: `Source returned no-results, but input is unreliably canonicalised. ${adversarialReason(adversarial.classes)}`,
+          pageTextExcerpt: excerpt,
+        };
+      }
+    }
     return { status: "clear" };
   }
   if (db.hitIndicatorPattern && db.hitIndicatorPattern.test(pageText)) {
@@ -807,7 +826,7 @@ async function runDatabaseCheck(
 
     // Classify with tri-state precedence
     const pageText = (await page.textContent("body").catch(() => "")) || "";
-    return classifyResult(pageText, db);
+    return classifyResult(pageText, db, searchTerm);
 
   } catch (err) {
     console.error(`Check failed for ${db.name} (${searchTerm}):`, err);

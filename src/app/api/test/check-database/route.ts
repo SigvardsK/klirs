@@ -83,7 +83,7 @@ export async function GET(request: Request) {
         pageText.includes("not a robot");
 
       if (!isBlocked) {
-        const cls = classifyResult(pageText || "", ADVERSE_MEDIA_CONFIG);
+        const cls = classifyResult(pageText || "", ADVERSE_MEDIA_CONFIG, searchTerm);
         resolvedStatus = cls.status;
         resolvedReason = cls.reason ?? null;
       }
@@ -306,7 +306,7 @@ export async function GET(request: Request) {
       isBlocked = pageText?.includes("Verify you are human") || false;
 
       // Classify using the same tri-state logic as the engine.
-      const cls = classifyResult(pageText || "", db);
+      const cls = classifyResult(pageText || "", db, searchTerm);
       resolvedStatus = cls.status;
       resolvedReason = cls.reason ?? null;
     }
