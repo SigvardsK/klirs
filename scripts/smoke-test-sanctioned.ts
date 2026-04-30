@@ -135,6 +135,123 @@ const tests: TestCase[] = [
     expect: ["hit"],
     note: "UK sanctions list has Kadyrov; hitIndicator 'records found' must fire.",
   },
+
+  // === Sprint 2 §B6 / T5 — phonetic / transliteration coverage probes ===
+  //
+  // These cases target the gap classes documented in
+  // docs/sprint-2/PHONETIC-AUDIT.md. Each case must return `hit` somewhere
+  // in the sanctions trio (or `uncertain`) — never `clear`. A `clear`
+  // verdict on any of these is a BLOCKER per LR-WS-2026-029. T5 cases 1, 4,
+  // 5 are expected to FAIL until B6 P0 transformer set ships (Cyrillic
+  // transliteration + initial expansion + punctuation handling). That's the
+  // intended tripwire — the test surfaces the BLOCKERs, T6 closes them.
+
+  // T5 Case 1 — Cyrillic original (BLOCKER probe: Cyrillic ↔ Latin transliteration)
+  // Пётр Авен is OFAC-, UK-, EU-sanctioned in Latin form. Without Cyrillic
+  // transliteration the engine queries the Cyrillic string against sources
+  // that index only Latin → all return clear (silent false-clear).
+  {
+    label: "T5.1 SANCTIONED Cyrillic / ofac_sdn (Пётр Авен)",
+    db: "ofac_sdn",
+    term: "Пётр Авен",
+    expect: ["hit", "uncertain"],
+    note: "BLOCKER probe — OFAC indexes AVEN, PETR (Latin). Until Cyrillic→Latin transliteration ships, this will return clear (silent false-clear failure mode).",
+  },
+  {
+    label: "T5.1 SANCTIONED Cyrillic / uk_sanctions (Пётр Авен)",
+    db: "uk_sanctions",
+    term: "Пётр Авен",
+    expect: ["hit", "uncertain"],
+    note: "BLOCKER probe — UK indexes Petr Aven (Latin). Same Cyrillic→Latin gap.",
+  },
+  {
+    label: "T5.1 SANCTIONED Cyrillic / firmas_sanctions (Пётр Авен)",
+    db: "firmas_sanctions",
+    term: "Пётр Авен",
+    expect: ["hit", "uncertain"],
+    note: "Firmas may index EU-consolidated Cyrillic aliases — possibly hits without engine fix; acceptable as long as it doesn't return clear.",
+  },
+
+  // T5 Case 2 — LV transliteration (canonical Firmas form, no auto-expand)
+  // "Pjotrs Avens" is the LV-suffixed canonical form. Firmas indexes this
+  // exact string. Without auto-expand, OFAC sees the LV form and may not
+  // match (no drop-s variant generated) — but Firmas should hit.
+  {
+    label: "T5.2 SANCTIONED LV-canonical / firmas_sanctioned (Pjotrs Avens, no expand)",
+    db: "firmas_sanctions",
+    term: "Pjotrs Avens",
+    expect: ["hit"],
+    note: "Firmas indexes 'Pjotrs Avens' exactly (LV form). Direct hit, no expansion needed.",
+  },
+  {
+    label: "T5.2 SANCTIONED LV-canonical / firmas_sanctions (Pjotrs Avens, expand)",
+    db: "firmas_sanctions",
+    term: "Pjotrs Avens",
+    expand: true,
+    expect: ["hit"],
+    note: "With expand the user-typed LV form should still hit Firmas via variant[0] (original).",
+  },
+
+  // T5 Case 3 — common misspelling without LV suffix on either token
+  // "Pjotr Aven" is the form a non-Latvian compliance officer might type
+  // (Latin Pjotr from Russian sources, no surname suffix). Firmas indexes
+  // "Pjotrs Avens" — needs add-s expansion on both tokens to bridge.
+  // OFAC indexes "AVEN, PETR" — partial match on "Aven" should hit even
+  // without expansion.
+  {
+    label: "T5.3 SANCTIONED misspelling / firmas_sanctions (Pjotr Aven, expand)",
+    db: "firmas_sanctions",
+    term: "Pjotr Aven",
+    expand: true,
+    expect: ["hit"],
+    note: "User types neither LV-suffixed nor canonical form. Auto-expand must add 'Pjotrs Avens' for Firmas hit.",
+  },
+  {
+    label: "T5.3 SANCTIONED misspelling / ofac_sdn (Pjotr Aven, expand)",
+    db: "ofac_sdn",
+    term: "Pjotr Aven",
+    expand: true,
+    expect: ["hit"],
+    note: "OFAC token-matches 'Aven' against AVEN, PETR; should hit on original or any variant.",
+  },
+
+  // T5 Case 4 — abbreviated initial (BLOCKER probe: initial expansion)
+  // "P. Avens" is the format used in Latvian formal documents (legal
+  // contracts, court records). Without initial-expansion, sources see "P."
+  // as a token and treat the period as punctuation → effectively single-token
+  // "P Avens" search → no matches.
+  {
+    label: "T5.4 SANCTIONED initial / firmas_sanctions (P. Avens, expand)",
+    db: "firmas_sanctions",
+    term: "P. Avens",
+    expand: true,
+    expect: ["hit", "uncertain"],
+    note: "BLOCKER probe — Firmas indexes 'Pjotrs Avens'. Until initial expansion ships, P. → Pjotrs is unbridged; engine returns clear silently.",
+  },
+  {
+    label: "T5.4 SANCTIONED initial / ofac_sdn (P. Avens, expand)",
+    db: "ofac_sdn",
+    term: "P. Avens",
+    expand: true,
+    expect: ["hit", "uncertain"],
+    note: "BLOCKER probe — OFAC indexes AVEN, PETR. Initial 'P.' must expand to 'Petr'/'Pjotr' OR 'Avens' surname-only must match.",
+  },
+
+  // T5 Case 5 — hyphenated Arabic-origin OFAC name (BLOCKER probe: punctuation)
+  // OFAC SDN includes hundreds of hyphenated/apostrophe-laden names. Without
+  // punctuation normalisation, exact-string queries can miss the canonical
+  // form when source-side tokenisation differs from input-side.
+  // Pick: ABDUL-RAHIM, MOHAMMED ZAMAN (OFAC SDN, Hamas-affiliated). Verify
+  // via OFAC search that this entity is currently listed before relying on
+  // this case as a regression tripwire.
+  {
+    label: "T5.5 SANCTIONED hyphenated / ofac_sdn (Abdul-Rahim Mohammed Zaman, expand)",
+    db: "ofac_sdn",
+    term: "Abdul-Rahim Mohammed Zaman",
+    expand: true,
+    expect: ["hit", "uncertain"],
+    note: "BLOCKER probe — Hyphenated Arabic name on OFAC SDN. If exact entity unlisted, replace with another currently-listed hyphenated SDN name. Until punctuation handling ships, hyphen-tokenisation differences can produce silent false-clear.",
+  },
 ];
 
 interface Outcome {
