@@ -14,7 +14,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/lib/i18n/routing";
 import LocaleSwitcher from "@/components/locale-switcher";
 
-const DEMO_CALENDAR_HREF = "https://calendar.app.google/HMuFt2RpA225PnLe9";
+const TRY_OUT_HREF = "/login";
 const GITHUB_HREF = "https://github.com/SigvardsK/klirs";
 
 export default async function MarketingPage({
@@ -68,7 +68,7 @@ export default async function MarketingPage({
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <a
-                href={DEMO_CALENDAR_HREF}
+                href={TRY_OUT_HREF}
                 className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-6 py-3 rounded-md transition-colors"
               >
                 {t("hero.ctaPrimary")}
@@ -169,7 +169,7 @@ export default async function MarketingPage({
             </h2>
             <p className="mt-4 text-slate-300 leading-relaxed">{t("cta.body")}</p>
             <a
-              href={DEMO_CALENDAR_HREF}
+              href={TRY_OUT_HREF}
               className="mt-8 inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-6 py-3 rounded-md transition-colors"
             >
               {t("cta.button")}

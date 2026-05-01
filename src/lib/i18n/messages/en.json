@@ -9,7 +9,7 @@
     "eyebrow": "Open-source AML/KYC screening · AGPL-3.0",
     "title": "Audit-ready AML screening, engineered to refuse silent false-clears.",
     "subhead": "Klirs is an open-source screening engine for Latvian and EU compliance buyers. Every verdict carries timestamped source-page screenshots, a transparent risk score, and pre-filled Latvian Bar Association annexes. Hosted version launches late May.",
-    "ctaPrimary": "Book a 30-min demo",
+    "ctaPrimary": "Try it out",
     "ctaSecondary": "Read the engine on GitHub"
   },
   "audit": {
@@ -33,8 +33,8 @@
   },
   "cta": {
     "title": "Hosted version launches late May.",
-    "body": "We’re running pilot calls with LV/EU compliance buyers through 2026-05-08 to lock pricing on a hybrid seat + per-screening pack model. Book a 30-minute demo and we’ll talk specifics for your firm.",
-    "button": "Book a 30-min demo"
+    "body": "Klirs is in pilot through 2026-05-08 — pricing locks after that on a hybrid seat + per-screening pack model. Sign in with your email and run your first screening in under a minute.",
+    "button": "Try it out"
   },
   "footer": {
     "tagline": "Klirs — open-source AML screening",

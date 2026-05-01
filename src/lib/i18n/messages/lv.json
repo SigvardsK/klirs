@@ -9,7 +9,7 @@
     "eyebrow": "Atvērtā koda sankciju un klientu izpētes pārbaudes · AGPL-3.0",
     "title": "Auditējama AML/KYC pārbaude, kas atsakās klusi attaisnot bez pierādījumiem.",
     "subhead": "Klirs ir atvērtā koda sankciju pārbaudes risinājums Latvijas un ES atbilstības speciālistiem. Katra pārbaude piegādā avota lapas ekrānuzņēmumus ar laika zīmogu, pārredzamu riska novērtējumu un iepriekš aizpildītus Latvijas Zvērinātu advokātu padomes pielikumus (P2 / P3.1 / P3.2). Mākoņa versija tiks palaista maija beigās.",
-    "ctaPrimary": "Piesakies 30 minūšu demonstrācijai",
+    "ctaPrimary": "Pamēģini",
     "ctaSecondary": "Lasīt pirmkodu GitHubā"
   },
   "audit": {
@@ -33,8 +33,8 @@
   },
   "cta": {
     "title": "Mākoņa versija tiks palaista maija beigās.",
-    "body": "Līdz 2026. gada 8. maijam rīkojam pilotzvanus ar Latvijas un ES atbilstības speciālistiem, lai noteiktu cenas hibrīda darba vietu un pārbaužu paketes modelim. Piesakieties 30 minūšu demonstrācijai, un mēs apspriedīsim jūsu uzņēmuma vajadzības.",
-    "button": "Rezervējiet 30 minūšu demonstrāciju"
+    "body": "Klirs ir pilotfāzē līdz 2026. gada 8. maijam — pēc tam cenas tiek fiksētas hibrīda darba vietu un pārbaužu paketes modelim. Pieslēdzieties ar e-pastu un veiciet pirmo pārbaudi mazāk nekā minūtē.",
+    "button": "Pamēģini"
   },
   "footer": {
     "tagline": "Klirs — atvērtā koda AML pārbaude",
