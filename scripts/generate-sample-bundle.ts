@@ -161,12 +161,18 @@ async function main() {
     writeFileSync(join(OUT_DIR, `${slug}.pdf`), pdf);
     console.log(`[pdf]  ${slug}.pdf  (${pdf.length} bytes)`);
 
-    // html-to-docx returns Buffer | Blob | ArrayBuffer; assume Buffer in node.
-    const docx = (await HTMLtoDOCX(sanitizeForDocx(v.html), undefined, {
+    // html-to-docx return type is declared ArrayBuffer | Blob; in node it
+    // returns a Buffer. Same coerce pattern as the production DOCX route.
+    const buf = await HTMLtoDOCX(sanitizeForDocx(v.html), undefined, {
       orientation: "portrait",
-      pageSize: { width: "21cm", height: "29.7cm" },
       margins: { top: 720, right: 720, bottom: 720, left: 720 },
-    })) as Buffer;
+      title: `${v.label} — ${SUBJECT_NAME}`,
+    });
+    const docx: Uint8Array = Buffer.isBuffer(buf)
+      ? new Uint8Array(buf)
+      : buf instanceof ArrayBuffer
+        ? new Uint8Array(buf)
+        : new Uint8Array(await (buf as Blob).arrayBuffer());
     writeFileSync(join(OUT_DIR, `${slug}.docx`), docx);
     console.log(`[docx] ${slug}.docx (${docx.length} bytes)`);
   }
