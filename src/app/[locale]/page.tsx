@@ -14,8 +14,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/lib/i18n/routing";
 import LocaleSwitcher from "@/components/locale-switcher";
 
-const DEMO_CALENDAR_HREF =
-  "mailto:sigvards.krongorns@gmail.com?subject=Klirs%20demo%20request";
+const DEMO_CALENDAR_HREF = "https://calendar.app.google/HMuFt2RpA225PnLe9";
 const GITHUB_HREF = "https://github.com/SigvardsK/klirs";
 
 export default async function MarketingPage({
