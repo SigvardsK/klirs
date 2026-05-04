@@ -474,16 +474,16 @@ export function ScreeningViewer({ screening: initialScreening, checks: initialCh
       <Tabs defaultValue={demoMode ? "analysis" : isActive ? "checks" : "screenshots"} className="w-full">
         <TabsList className="bg-slate-900 border border-white/10 mb-6">
           {!demoMode && (
-            <TabsTrigger value="screenshots" className="data-[state=active]:bg-slate-800 gap-1.5">
+            <TabsTrigger value="screenshots" className="data-active:bg-slate-800 data-active:text-white gap-1.5">
               <Camera className="w-4 h-4" />
               Screenshots
             </TabsTrigger>
           )}
-          <TabsTrigger value="checks" className="data-[state=active]:bg-slate-800 gap-1.5">
+          <TabsTrigger value="checks" className="data-active:bg-slate-800 data-active:text-white gap-1.5">
             <Table className="w-4 h-4" />
             Checks
           </TabsTrigger>
-          <TabsTrigger value="analysis" className="data-[state=active]:bg-slate-800 gap-1.5">
+          <TabsTrigger value="analysis" className="data-active:bg-slate-800 data-active:text-white gap-1.5">
             <FileText className="w-4 h-4" />
             Analysis
           </TabsTrigger>
