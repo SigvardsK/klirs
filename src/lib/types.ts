@@ -43,6 +43,15 @@ export function statusDisplayLabel(status: CheckStatus): string {
   }
 }
 
+// Rate-limited / blocked errors are written by the engine with a `[RATE_LIMITED]`
+// prefix in the `details` field (see RateLimitError + formatErrorDetail in
+// screening-engine.ts). The UI uses this to render a yellow "Source temporarily
+// unavailable" badge instead of the generic red error — surfaces an honest
+// answer to the buyer-facing question "what happens if your IP gets blocked".
+export function isRateLimited(check: { status: CheckStatus; details: string | null }): boolean {
+  return check.status === "error" && !!check.details?.startsWith("[RATE_LIMITED]");
+}
+
 export interface ScreeningCheck {
   id: string;
   screening_id: string;

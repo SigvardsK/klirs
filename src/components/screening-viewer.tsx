@@ -9,7 +9,7 @@ import {
   AlertTriangle, ExternalLink, Building2, User, Loader2, Download, Eye
 } from "lucide-react";
 import type { Screening, ScreeningCheck } from "@/lib/types";
-import { statusDisplayLabel } from "@/lib/types";
+import { statusDisplayLabel, isRateLimited } from "@/lib/types";
 import { SEARCHABLE_DATABASES, ADVERSE_MEDIA_CONFIG, COMPANY_REGISTRY_CONFIG } from "@/lib/db-configs";
 import { deriveRisk, type RiskLevel } from "@/lib/risk-score";
 import { expandLvVariants } from "@/lib/name-variants";
@@ -39,6 +39,11 @@ const statusColors: Record<string, string> = {
   error: "bg-orange-500/10 text-orange-400 border-orange-500/20",
   pending: "bg-slate-500/10 text-slate-400 border-slate-500/20",
 };
+
+// Rate-limited / blocked errors get a distinct yellow/amber palette so reviewers
+// see "the source threw us out" rather than "the engine broke." The screening
+// itself still ships with whatever evidence the remaining sources produced.
+const rateLimitedBadgeClass = "bg-yellow-500/10 text-yellow-400 border-yellow-500/30";
 
 // VID PNP + VID VAD submit POST forms and render results in place — the
 // captured source_url is the service landing, not a reproducible result. We
@@ -600,13 +605,23 @@ export function ScreeningViewer({ screening: initialScreening, checks: initialCh
                       )}
                     </td>
                     <td className="p-3">
-                      <Badge className={`text-xs ${statusColors[check.status]}`}>
-                        {check.status === "clear" && <CheckCircle className="w-3 h-3 mr-1" />}
-                        {check.status === "hit" && <AlertTriangle className="w-3 h-3 mr-1" />}
-                        {check.status === "uncertain" && <AlertTriangle className="w-3 h-3 mr-1" />}
-                        {check.status === "error" && <XCircle className="w-3 h-3 mr-1" />}
-                        {statusDisplayLabel(check.status)}
-                      </Badge>
+                      {isRateLimited(check) ? (
+                        <Badge
+                          className={`text-xs ${rateLimitedBadgeClass}`}
+                          title="Source returned HTTP 429/403 (rate-limited or temporarily blocked). The next screening will retry; this check is not a verdict."
+                        >
+                          <AlertTriangle className="w-3 h-3 mr-1" />
+                          Source unavailable
+                        </Badge>
+                      ) : (
+                        <Badge className={`text-xs ${statusColors[check.status]}`}>
+                          {check.status === "clear" && <CheckCircle className="w-3 h-3 mr-1" />}
+                          {check.status === "hit" && <AlertTriangle className="w-3 h-3 mr-1" />}
+                          {check.status === "uncertain" && <AlertTriangle className="w-3 h-3 mr-1" />}
+                          {check.status === "error" && <XCircle className="w-3 h-3 mr-1" />}
+                          {statusDisplayLabel(check.status)}
+                        </Badge>
+                      )}
                     </td>
                     <td className="p-3">
                       {check.source_url ? (

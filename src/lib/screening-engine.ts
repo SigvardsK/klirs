@@ -42,6 +42,55 @@ interface ScreeningJob {
   persons: Person[];
 }
 
+/**
+ * Thrown when a target source returns an HTTP-level rate-limit / blocked response
+ * (429, 403). Distinguished from generic `error` because the failure mode is
+ * recoverable on retry — the user-facing surface should be a yellow "source
+ * temporarily unavailable" badge, not a red error. The screening still ships
+ * with whatever evidence the remaining sources produced.
+ *
+ * Detection: `runDatabaseCheck` captures the navigation response from `page.goto`
+ * and inspects `.status()`. If 429 or 403, throws this. The screening loop's
+ * catch handler renders the prefixed `details` field (`[RATE_LIMITED] …`) which
+ * the UI parses to render the distinct badge.
+ *
+ * Out of scope (deferred to Phase B / post-revenue): exponential backoff, per-
+ * source token bucket, automated proxy rotation, multi-region failover.
+ */
+export class RateLimitError extends Error {
+  readonly httpStatus: number;
+  readonly retryAfter: string | null;
+  readonly sourceName: string;
+
+  constructor(sourceName: string, httpStatus: number, retryAfter: string | null) {
+    super(
+      `[RATE_LIMITED] ${sourceName} returned HTTP ${httpStatus}` +
+        (retryAfter ? ` (Retry-After: ${retryAfter})` : "")
+    );
+    this.name = "RateLimitError";
+    this.httpStatus = httpStatus;
+    this.retryAfter = retryAfter;
+    this.sourceName = sourceName;
+  }
+}
+
+/**
+ * Format the `details` field consistently for any error that goes into
+ * `screening_checks`. Uses `[RATE_LIMITED]` prefix for RateLimitError so the UI
+ * can render a yellow badge instead of the generic red error. Magic-prefix
+ * approach (vs a separate column) keeps this a code-only change with no schema
+ * migration risk in the current deploy cycle.
+ */
+export function formatErrorDetail(err: unknown): string {
+  if (err instanceof RateLimitError) {
+    return err.message; // Already prefixed in the constructor.
+  }
+  if (err instanceof Error) {
+    return err.message;
+  }
+  return "Unknown error";
+}
+
 function getAdminClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -210,7 +259,7 @@ export async function runScreening(job: ScreeningJob): Promise<void> {
             category: db.category,
             search_term: searchTerm,
             status: "error",
-            details: err instanceof Error ? err.message : "Unknown error",
+            details: formatErrorDetail(err),
             source_url: safePageUrl(page),
             checked_at: new Date().toISOString(),
           });
@@ -321,7 +370,7 @@ export async function runScreening(job: ScreeningJob): Promise<void> {
             category: "adverse_media",
             search_term: `${personName} (${lang})`,
             status: "error",
-            details: err instanceof Error ? err.message : "Unknown error",
+            details: formatErrorDetail(err),
             screenshot_path: errorScreenshotPath,
             source_url: safePageUrl(page),
             checked_at: new Date().toISOString(),
@@ -495,7 +544,7 @@ export async function runScreening(job: ScreeningJob): Promise<void> {
           category: "company_registry",
           search_term: urSearchTerm,
           status: "error",
-          details: err instanceof Error ? err.message : "Unknown error",
+          details: formatErrorDetail(err),
           source_url: safePageUrl(page),
           checked_at: new Date().toISOString(),
         });
@@ -756,7 +805,21 @@ async function runDatabaseCheck(
     // more rows without resorting to fullPage screenshots. Set before goto so
     // the page's first layout pass uses the final dimensions.
     await page.setViewportSize({ width: 1280, height: db.viewportHeight || 1024 });
-    await page.goto(db.url, { waitUntil: "domcontentloaded", timeout: 30000 });
+    const navResponse = await page.goto(db.url, { waitUntil: "domcontentloaded", timeout: 30000 });
+    // HTTP-level rate-limit / block detection. `page.goto` returns the navigation
+    // response (or null for same-document navigations). 429/403 from a target
+    // source means the IP is being throttled or blocked — distinct from a
+    // selector-not-found or text-classification failure. Throw the typed error
+    // so the catch site can render the yellow "temporarily unavailable" badge
+    // rather than the generic red one.
+    if (navResponse) {
+      const httpStatus = navResponse.status();
+      if (httpStatus === 429 || httpStatus === 403) {
+        const retryAfter = navResponse.headers()["retry-after"] ?? null;
+        await injectEvidenceHeader(page, db.name, searchTerm).catch(() => {});
+        throw new RateLimitError(db.name, httpStatus, retryAfter);
+      }
+    }
     await sleep(1000); // Let cookie banners render
 
     // Detect Cloudflare/bot protection challenges
