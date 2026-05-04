@@ -62,6 +62,20 @@ export interface DbConfig {
   // UK Sanctions and UR Registry both need ~1400 to show 2 records cleanly with
   // the evidence header still anchored at the bottom.
   viewportHeight?: number;
+  // Per-source canary contract. When set, the daily GitHub Actions workflow
+  // `.github/workflows/source-health-check.yml` runs the source against
+  // `knownCleanTerm` (must observe `expectedCleanStatus`) and `knownSanctionedTerm`
+  // (must observe `expectedSanctionedStatus`). A mismatch fails the workflow and
+  // surfaces in the Actions tab — the buyer-facing answer to "how do you know
+  // the tool doesn't silently break if a target page changes." Picks should be
+  // stable: well-known sanctioned individuals on each list, and entities that
+  // are robustly absent (Microsoft for sanctions; Jānis Bērziņš for LV PEP).
+  healthCheck?: {
+    knownCleanTerm: string;
+    knownSanctionedTerm: string;
+    expectedCleanStatus: "clear";
+    expectedSanctionedStatus: "hit" | "uncertain";
+  };
 }
 
 // Searchable databases (submit a query, get results)
@@ -88,6 +102,12 @@ export const SEARCHABLE_DATABASES: DbConfig[] = [
     filenamePrefix: "firmas_sanctions",
     // Firmas fits the result table + pagination summary in the default 1024
     // viewport cleanly — no viewport extension needed.
+    healthCheck: {
+      knownCleanTerm: "Microsoft Corporation",
+      knownSanctionedTerm: "Petr Aven",
+      expectedCleanStatus: "clear",
+      expectedSanctionedStatus: "hit",
+    },
   },
   {
     id: "ofac_sdn",
@@ -115,6 +135,12 @@ export const SEARCHABLE_DATABASES: DbConfig[] = [
     cookieSelector: null,
     rateLimit: 3000,
     filenamePrefix: "ofac_sdn",
+    healthCheck: {
+      knownCleanTerm: "Microsoft Corporation",
+      knownSanctionedTerm: "Petr Aven",
+      expectedCleanStatus: "clear",
+      expectedSanctionedStatus: "hit",
+    },
   },
   {
     id: "uk_sanctions",
@@ -146,6 +172,14 @@ export const SEARCHABLE_DATABASES: DbConfig[] = [
     // but a `hit` is downgraded to `uncertain` so the reviewer inspects the
     // screenshot rather than escalating to REJECT on a tokenisation artefact.
     downgradeCompanyHits: true,
+    healthCheck: {
+      // Single-word "Microsoft" avoids UK's space-tokenised false positive on
+      // "Corporation" (137 records). Mirrors smoke-test convention.
+      knownCleanTerm: "Microsoft",
+      knownSanctionedTerm: "Petr Aven",
+      expectedCleanStatus: "clear",
+      expectedSanctionedStatus: "hit",
+    },
   },
   {
     id: "vid_pnp",

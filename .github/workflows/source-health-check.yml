@@ -1,0 +1,41 @@
+name: Source health canary
+
+# Daily check that every screening source returns its contracted verdict on a
+# known-clean and a known-sanctioned input. A failure means a target page changed
+# in a way that broke the engine's selectors, indicators, or classification — the
+# trip-wire we promise prospects ("how do you know the tool doesn't silently
+# break if a target page changes"). The Actions tab is the public answer.
+
+on:
+  schedule:
+    # Daily at 06:00 UTC (~08:00 LV). Picked to land before the EU business
+    # day so a regression is visible in the dashboard before it can affect
+    # a user-driven screening.
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Override BASE_URL (defaults to klirs.eu)"
+        required: false
+        default: "https://klirs.eu"
+
+permissions:
+  contents: read
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - run: npm ci
+
+      - name: Run source health canary
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url || 'https://klirs.eu' }}
+        run: npx tsx scripts/run-source-health-check.ts
