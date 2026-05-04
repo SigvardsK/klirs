@@ -1,22 +1,23 @@
 /**
- * Server-side Google OAuth initiation.
+ * Server-side Google OAuth initiation — Brave-compatible.
  *
- * Why server-side: the PKCE flow stores a code verifier that must survive the
- * round-trip to Google's consent screen and back to /auth/callback. The
- * client-side @supabase/ssr `createBrowserClient` writes the verifier to
- * document.cookie, but production traces showed the verifier going missing on
- * the callback (`PKCE code verifier not found in storage`) — likely an async
- * cookie-flush race against the top-level navigation `signInWithOAuth`
- * triggers internally. Initiating server-side writes the verifier through the
- * server-side response-cookie path (the canonical, well-tested route in
- * @supabase/ssr) and sidesteps the race entirely.
+ * Why we don't call supabase.auth.signInWithOAuth: that path stores the PKCE
+ * verifier in a cookie set on the 303 response that immediately redirects to
+ * supabase.co. Brave Shields (and similar privacy features in Firefox-strict /
+ * Safari-ITP) classify "Set-Cookie + Location to different origin" as bounce-
+ * tracking and silently drop the cookie. The callback then can't find the
+ * verifier, surfacing "PKCE code verifier not found in storage."
  *
- * The login page's Google button POSTs here as a plain HTML form. We call
- * signInWithOAuth, take the OAuth URL Supabase returns, and redirect the
- * browser there. The verifier cookie lands on this redirect response.
+ * Instead: generate the verifier + challenge ourselves, store the verifier in
+ * `auth_pkce_state` keyed by an opaque state token, construct the Supabase
+ * OAuth URL ourselves, and 303-redirect. NO cookie is set on this response,
+ * so Brave Shields has nothing to flag. The state token passes through the
+ * OAuth chain (Supabase forwards it on the callback URL) and the callback
+ * looks the verifier up by state.
  */
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { generatePkcePair, generateState } from "@/lib/auth/pkce";
 
 function getOrigin(request: Request): string {
   const forwardedHost = request.headers.get("x-forwarded-host");
@@ -32,22 +33,45 @@ function getOrigin(request: Request): string {
 export async function POST(request: Request) {
   const origin = getOrigin(request);
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${origin}/auth/callback`,
-      },
-    });
-    if (error || !data?.url) {
-      const message = error?.message ?? "no_oauth_url_returned";
-      console.error("[auth/sign-in/google] init_failed", { message });
+    const { verifier, challenge } = generatePkcePair();
+    const state = generateState();
+
+    const admin = createAdminClient();
+    const { error: insertError } = await admin
+      .from("auth_pkce_state")
+      .insert({ state, code_verifier: verifier });
+    if (insertError) {
+      console.error("[auth/sign-in/google] state_insert_failed", {
+        message: insertError.message,
+        code: insertError.code,
+      });
       return NextResponse.redirect(
-        `${origin}/login?error=auth_failed&detail=${encodeURIComponent(`oauth_init: ${message}`)}`,
+        `${origin}/login?error=auth_failed&detail=${encodeURIComponent(`state_insert: ${insertError.message}`)}`,
         303
       );
     }
-    return NextResponse.redirect(data.url, 303);
+
+    // Embed our state token in `redirect_to` rather than the OAuth `state`
+    // param. Supabase manages its own CSRF state internally on
+    // /auth/v1/authorize and rejects any caller-supplied `state` with
+    // `bad_oauth_state`. The redirect_to URL is preserved verbatim across
+    // the OAuth round-trip (Supabase appends `&code=…` on success), so
+    // query-string-embedding our state is the canonical way to thread
+    // app-specific context through. We use the param name `ks` (klirs
+    // state) to avoid any chance of collision with Supabase's reserved names.
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const callbackUrl = new URL("/auth/callback", origin);
+    callbackUrl.searchParams.set("ks", state);
+    const params = new URLSearchParams({
+      provider: "google",
+      redirect_to: callbackUrl.toString(),
+      code_challenge: challenge,
+      code_challenge_method: "s256",
+    });
+    return NextResponse.redirect(
+      `${supabaseUrl}/auth/v1/authorize?${params.toString()}`,
+      303
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     const name = err instanceof Error ? err.name : "UnknownError";
