@@ -1,20 +1,19 @@
 /**
- * Server-side email magic-link initiation.
+ * Server-side email magic-link initiation — token-hash flow.
  *
- * Why server-side: same reason as /auth/sign-in/google — the PKCE verifier
- * must survive between "user clicks Send sign-in link" and "user clicks the
- * link in their email." Writing it through the server-side @supabase/ssr
- * response-cookie path is the canonical path that doesn't race with browser
- * navigation. The previous client-side `signInWithOtp` produced
- * `PKCE code verifier not found in storage` on the callback even within the
- * same browser session.
+ * Why token-hash instead of PKCE: Brave Shields (and similar privacy
+ * features in Firefox-strict / Safari-ITP) drop the verifier cookie that
+ * the PKCE-code flow depends on. Token-hash flow doesn't use PKCE at all —
+ * Supabase emails a one-time token, /auth/confirm verifies it directly via
+ * verifyOtp({ token_hash, type }). No verifier cookie needed.
  *
- * Note on cross-browser email clicks: if the user submits the form in one
- * browser (e.g. incognito) and clicks the email link in their default
- * browser, the verifier cookie won't be present. That requires switching to
- * the token-hash flow (Supabase email-template change + a /auth/confirm
- * route that calls verifyOtp). Deferred — same-browser flow is the dominant
- * case and the one that needed unblocking before Tuesday outreach.
+ * Activation requires a Supabase email template change (Authentication →
+ * Email Templates → Magic Link) so the email link points at our /auth/
+ * confirm route with `?token_hash={{ .TokenHash }}&type=magiclink` — see
+ * the comment in /auth/confirm/route.ts for the exact template body.
+ *
+ * `emailRedirectTo` here is the fallback the email template references via
+ * {{ .SiteURL }}; the explicit `?token_hash=…` URL takes precedence.
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -47,7 +46,7 @@ export async function POST(request: Request) {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${origin}/auth/callback`,
+        emailRedirectTo: `${origin}/auth/confirm`,
         shouldCreateUser: true,
       },
     });
