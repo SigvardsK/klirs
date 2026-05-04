@@ -7,6 +7,10 @@ import {
   Lock,
   Code,
   ExternalLink,
+  Scale,
+  Briefcase,
+  Coins,
+  Database,
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
@@ -104,6 +108,59 @@ export default async function MarketingPage({
                   code: (chunks) => <code>{chunks}</code>,
                 })}
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* For whom */}
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <h2 className="text-3xl font-semibold tracking-tight max-w-3xl">
+            {t("forWhom.title")}
+          </h2>
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="rounded-lg border border-white/10 bg-slate-900/40 p-6">
+              <Scale className="w-8 h-8 text-emerald-500" />
+              <h3 className="mt-4 text-lg font-semibold">
+                {t("forWhom.advokatiTitle")}
+              </h3>
+              <p className="mt-2 text-slate-300 leading-relaxed">
+                {t("forWhom.advokatiBody")}
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-slate-900/40 p-6">
+              <Briefcase className="w-8 h-8 text-emerald-500" />
+              <h3 className="mt-4 text-lg font-semibold">
+                {t("forWhom.complianceTitle")}
+              </h3>
+              <p className="mt-2 text-slate-300 leading-relaxed">
+                {t("forWhom.complianceBody")}
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-slate-900/40 p-6">
+              <Coins className="w-8 h-8 text-emerald-500" />
+              <h3 className="mt-4 text-lg font-semibold">
+                {t("forWhom.vaspTitle")}
+              </h3>
+              <p className="mt-2 text-slate-300 leading-relaxed">
+                {t("forWhom.vaspBody")}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Registers / compliance reality anchor */}
+        <section className="border-y border-white/10 bg-slate-900/40">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="max-w-3xl flex items-start gap-4">
+              <Database className="w-8 h-8 text-emerald-500 shrink-0 mt-1" />
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  {t("registers.title")}
+                </h2>
+                <p className="mt-3 text-slate-300 leading-relaxed">
+                  {t("registers.body")}
+                </p>
+              </div>
             </div>
           </div>
         </section>

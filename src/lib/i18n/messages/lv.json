@@ -17,6 +17,19 @@
     "quote": "Izlasiet, izpildiet un auditējiet katru rindu, kas radīja jūsu pierādījumus. Neviens piegādātājs nevar paslēpt sankciju saraksta izlaidumu melnajā kastē.",
     "body": "Klirs ir licencēts saskaņā ar <strong>AGPL-3.0</strong>. Klasifikators ir veidots pēc divu apstiprinājumu principa: <code>clear</code> spriedums prasa pozitīvus pierādījumus no avota lapas — klusa <code>clear</code> pārbaude par sankcijām pakļautām personām vai organizācijām ir līguma pārkāpums, nevis nemanāma kļūda. Slēgtā pirmkoda konkurenti strukturāli nespēj sniegt šādu apgalvojumu."
   },
+  "forWhom": {
+    "title": "Kam Klirs ir paredzēts.",
+    "advokatiTitle": "Latvijas zvērinātiem advokātiem",
+    "advokatiBody": "P2, P3.1 un P3.2 pielikumi tiek iepriekš aizpildīti no katras pārbaudes — gatavi ievietošanai klienta lietā. Metodika ir auditējama rindu pa rindai, ja Zvērinātu advokātu padome to pieprasa.",
+    "complianceTitle": "Iekšējiem atbilstības speciālistiem",
+    "complianceBody": "ES, ANO, ASV, Lielbritānijas un Austrālijas sankcijas, Latvijas PEP saraksti un publiskā informācija — vienā pārbaudē. Pierādījumu trase ar laika zīmogu, ko revidents pieņems vēl 18 mēnešus pēc pārbaudes.",
+    "vaspTitle": "Latvijas un Igaunijas kriptoaktīvu pakalpojumu sniedzējiem",
+    "vaspBody": "Klientu uzņemšanas līmeņa pārbaude tādā ātrumā, kāds nepieciešams jūsu rindai. Maksa par pārbaudi nodrošina, ka jūsu vienības ekonomika izdzīvo intensīvā mēnesī."
+  },
+  "registers": {
+    "title": "Saskaņots ar Latvijas atbilstības realitāti.",
+    "body": "Datu avoti: Firmas.lv (FID konsolidētie sankciju saraksti), VID PNP, VID VAD, Latvijas Uzņēmumu reģistrs, OFAC SDN, Lielbritānijas sankcijas, daudzvalodu publiskā informācija (LV / EN / RU / ET). Atbilst ES AML6 direktīvai un Padomes Instrukcijai NILLTPFN-SL."
+  },
   "features": {
     "title": "Ko sniedz katra pārbaude.",
     "evidenceTitle": "Revidentu standartiem atbilstošs pierādījumu kopums",
@@ -24,7 +37,7 @@
     "coverageTitle": "Vairāku avotu aptvērums",
     "coverageBody": "OFAC SDN, Lielbritānijas sankcijas, ES / ANO / Austrālijas konsolidētās sankcijas, Latvijas PEP / amatpersonu deklarācijas, Latvijas Uzņēmumu reģistrs, daudzvalodu publiskās ziņas (LV / EN / RU / ET).",
     "annexTitle": "Iepriekš aizpildīti padomes pielikumi",
-    "annexBody": "P2 / P3.1 / P3.2 veidlapas no Latvijas Zvērinātu advokātu padomes, automātiski aizpildītas no katras pārbaudes. Ievietojiet tās tieši klienta lietā."
+    "annexBody": "P2 (klienta identifikācija un izpēte), P3.1 (klienta riska novērtējums) un P3.2 (padziļinātā izpēte) — Latvijas Zvērinātu advokātu padomes veidlapas, automātiski aizpildītas no katras pārbaudes. Ievietojiet tās tieši klienta lietā."
   },
   "demoVideo": {
     "title": "Skatieties darbībā.",

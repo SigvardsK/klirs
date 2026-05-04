@@ -17,6 +17,19 @@
     "quote": "Read, run, and audit every line that produced your evidence. No vendor can hide a sanctions-list omission behind a black box.",
     "body": "Klirs is licensed under <strong>AGPL-3.0</strong>. The dual-affirmative classifier means a <code>clear</code> verdict requires positive proof from the source page — silent false-clears on sanctioned entities are a contract violation, not a quiet bug. Proprietary competitors structurally cannot make this claim."
   },
+  "forWhom": {
+    "title": "Who Klirs is for.",
+    "advokatiTitle": "Latvian advokāti",
+    "advokatiBody": "P2, P3.1, and P3.2 annexes pre-filled from each verdict. Drop straight into the client file. Methodology is auditable line-by-line if the Bar Council asks.",
+    "complianceTitle": "In-house compliance officers",
+    "complianceBody": "EU + UN + US + UK + AU sanctions plus Latvian PEP and adverse media in one screening. Timestamped evidence trail your auditor will accept 18 months later.",
+    "vaspTitle": "LV / EE crypto-VASPs",
+    "vaspBody": "Onboarding-grade screening at the speed your queue demands. Per-screening pricing means your unit economics survive a busy month."
+  },
+  "registers": {
+    "title": "Anchored in Latvian compliance reality.",
+    "body": "Data sources: Firmas.lv (FID consolidated sanctions), VID PNP, VID VAD, Latvian Business Register (Uzņēmumu reģistrs), OFAC SDN, UK Sanctions, multilingual adverse media (LV / EN / RU / ET). Aligned with EU AML6 and Padomes Instrukcija NILLTPFN-SL."
+  },
   "features": {
     "title": "What every screening produces.",
     "evidenceTitle": "Audit-grade evidence bundle",
@@ -24,7 +37,7 @@
     "coverageTitle": "Multi-source coverage",
     "coverageBody": "OFAC SDN, UK Sanctions, EU/UN/AU consolidated, Latvian PEP / officials’ declarations, Latvian Business Register, multilingual adverse media (LV / EN / RU / ET).",
     "annexTitle": "Pre-filled Bar annexes",
-    "annexBody": "P2 / P3.1 / P3.2 templates from the Latvian Bar Association, auto-populated from each verdict. Drop straight into your client file."
+    "annexBody": "P2 (client identification & due diligence), P3.1 (client risk assessment), and P3.2 (enhanced due diligence) — Latvian Bar Association templates auto-populated from each verdict. Drop straight into your client file."
   },
   "demoVideo": {
     "title": "See it in action.",
