@@ -11,6 +11,7 @@ import Link from "next/link";
 function LoginContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
+  const errorDetail = searchParams.get("detail");
 
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -83,6 +84,11 @@ function LoginContent() {
                   ? "Authentication failed. Please try again."
                   : "An error occurred. Please try again."}
               </p>
+              {errorDetail && (
+                <p className="text-[10px] text-red-300/60 text-center mt-1.5 font-mono break-all">
+                  {errorDetail}
+                </p>
+              )}
             </div>
           )}
 
