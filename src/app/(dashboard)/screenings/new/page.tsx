@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { SUPERUSERS } from "@/lib/constants";
+import { isSuperuserEmail } from "@/lib/constants";
 import { ScreeningForm } from "./screening-form";
 
 /**
@@ -21,6 +21,6 @@ export default async function NewScreeningPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const isSuperuser = SUPERUSERS.includes(user.email ?? "");
+  const isSuperuser = isSuperuserEmail(user.email);
   return <ScreeningForm isSuperuser={isSuperuser} />;
 }

@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Plus, Trash2, ArrowLeft, Building2, User } from "lucide-react";
 import type { Person } from "@/lib/types";
 import { expandLvVariants } from "@/lib/name-variants";
+import { DEMO_LIMIT, DEMO_LIMIT_SENTINEL, DEMO_CONTACT_HREF } from "@/lib/constants";
 import Link from "next/link";
 
 /**
@@ -44,12 +45,9 @@ const JURISDICTIONS = [
   { value: "LV", label: "Latvia" },
 ];
 
-// Freemium gate: non-superusers get DEMO_LIMIT screenings before being asked
-// to email about a pilot. Superusers bypass entirely (env-var gated).
-const DEMO_LIMIT = 3;
-const DEMO_LIMIT_SENTINEL = "__DEMO_LIMIT_REACHED__";
-const CONTACT_HREF =
-  "mailto:sigvards@krongorns.com?subject=Klirs%20pilot%20%E2%80%94%20more%20screenings";
+// DEMO_LIMIT, DEMO_LIMIT_SENTINEL, DEMO_CONTACT_HREF imported from
+// @/lib/constants — single source of truth shared with the dashboard gate
+// wall in src/app/(dashboard)/dashboard/page.tsx.
 
 /**
  * Client form component. `isSuperuser` is computed server-side in the parent
@@ -449,7 +447,7 @@ export function ScreeningForm({ isSuperuser }: { isSuperuser: boolean }) {
                   watermarks, audit-ready evidence bundles.
                 </p>
                 <a
-                  href={CONTACT_HREF}
+                  href={DEMO_CONTACT_HREF}
                   className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-medium px-4 py-2 rounded-md text-sm transition-colors"
                 >
                   Email us about a pilot →

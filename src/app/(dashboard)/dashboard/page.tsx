@@ -6,7 +6,7 @@ import { Plus, Shield, Clock, CheckCircle, AlertTriangle, XCircle } from "lucide
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Screening } from "@/lib/types";
-import { SUPERUSERS } from "@/lib/constants";
+import { isSuperuserEmail, DEMO_LIMIT, DEMO_CONTACT_HREF } from "@/lib/constants";
 
 const statusConfig = {
   pending: { label: "Pending", variant: "secondary" as const, icon: Clock },
@@ -27,8 +27,8 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false });
 
   const typedScreenings = (screenings || []) as Screening[];
-  const isSuperuser = SUPERUSERS.includes(user.email);
-  const hasUsedDemo = !isSuperuser && typedScreenings.length > 0;
+  const isSuperuser = isSuperuserEmail(user.email);
+  const hasUsedDemo = !isSuperuser && typedScreenings.length >= DEMO_LIMIT;
 
   return (
     <div>
@@ -51,7 +51,7 @@ export default async function DashboardPage() {
             <Button
               disabled
               className="bg-slate-800 text-slate-500 cursor-not-allowed"
-              title="Contact us for additional screenings"
+              title={`Demo limit reached (${DEMO_LIMIT} screenings) — email us about a pilot`}
             >
               <Plus className="w-4 h-4 mr-2" />
               New Screening
@@ -128,25 +128,26 @@ export default async function DashboardPage() {
             );
           })}
 
-          {/* Gate wall for additional screenings */}
+          {/* Gate wall after DEMO_LIMIT reached */}
           {hasUsedDemo && (
-            <div className="bg-slate-900/50 rounded-xl border border-amber-500/20 p-6 mt-6">
+            <div className="bg-slate-900/50 rounded-xl border border-amber-500/30 p-6 mt-6">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
-                <div>
-                  <h3 className="text-white font-medium mb-1">Demo Limit Reached</h3>
-                  <p className="text-sm text-slate-400 mb-3">
-                    Your free demo screening is complete. To run additional screenings
-                    and access full risk analysis, contact us for a service plan.
+                <div className="flex-1">
+                  <h3 className="text-white font-medium mb-1">
+                    Demo Limit Reached ({DEMO_LIMIT} screenings)
+                  </h3>
+                  <p className="text-sm text-slate-400 mb-4 leading-relaxed">
+                    You&rsquo;ve used your {DEMO_LIMIT} free screenings. Drop us a line
+                    and we&rsquo;ll get you set up with a pilot — full access, no
+                    watermarks, audit-ready evidence bundles.
                   </p>
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-wrap items-center gap-3">
                     <a
-                      href="https://github.com/SigvardsK/klirs/issues/new"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center text-sm text-emerald-400 hover:text-emerald-300 font-medium"
+                      href={DEMO_CONTACT_HREF}
+                      className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-medium px-4 py-2 rounded-md text-sm transition-colors"
                     >
-                      Open an issue on GitHub &rarr;
+                      Email us about a pilot →
                     </a>
                     <Link
                       href="/demo"
