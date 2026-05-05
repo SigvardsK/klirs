@@ -56,7 +56,7 @@ The engine refuses to default to "clean" — every `clear` verdict requires a po
 The completed PDF that lands in the auditor's inbox:
 
 <p align="center">
-  <a href="./public/screenshots/05-pdf-page.png"><img src="./public/screenshots/05-pdf-page.png" alt="First page of the audit PDF — REJECT verdict, breakdown, evidence index" width="600"></a>
+  <a href="./public/screenshots/05-pdf-page.png"><img src="./public/screenshots/05-pdf-page.png" alt="First page of the audit PDF — verdict, category-weighted breakdown, evidence index" width="600"></a>
 </p>
 
 ---
@@ -105,8 +105,8 @@ The screening still ships with whatever evidence the remaining sources produced.
 
 ```mermaid
 flowchart TD
-    Input["You enter<br/><i>Pjotrs Avens · individual · jurisdiction LV</i>"]:::input
-    Derive["Name derivation<br/><i>'Pjotr Avens' + 'Pjotrs Avens' + …</i>"]:::derive
+    Input["You enter<br/><i>Jānis Bērziņš · individual · jurisdiction LV</i>"]:::input
+    Derive["Name derivation<br/><i>'Janis Berzins' + 'J. Bērziņš' + …</i>"]:::derive
 
     Input --> Derive
     Derive --> Sanctions
@@ -165,8 +165,8 @@ flowchart TD
 <summary>Same flow as plain text (fallback if Mermaid doesn't render)</summary>
 
 ```
-You enter      → Pjotrs Avens, individual, jurisdiction LV
-                 (the form auto-derives "Pjotr Avens" + "Pjotrs Avens" + …)
+You enter      → Jānis Bērziņš, individual, jurisdiction LV
+                 (the form auto-derives "Janis Berzins" + "J. Bērziņš" + …)
 The engine     → screens each variant across:
                    · OFAC SDN List          (US sanctions)
                    · UK Sanctions List      (FCDO)

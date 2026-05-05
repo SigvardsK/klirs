@@ -26,7 +26,7 @@ const REPO = resolve(HERE, "..");
 const AUTH_PATH = resolve(REPO, "scripts/red-team/auth.json");
 const OUT_DIR = resolve(REPO, "public/screenshots");
 const BASE_URL = process.env.BASE_URL || "https://klirs.eu";
-const HERO_NAME = process.env.HERO_NAME || "Pjotrs Avens";
+const HERO_NAME = process.env.HERO_NAME || "Jānis Bērziņš";
 
 if (!existsSync(AUTH_PATH)) {
   console.error(`Auth state not found: ${AUTH_PATH}`);
@@ -101,13 +101,13 @@ async function main() {
   const nameInput = page.locator('input[placeholder*="John Smith" i], input[placeholder*="full name" i]').first();
   if (await nameInput.count()) {
     await nameInput.click();
-    await nameInput.fill("Pjotrs Avens");
+    await nameInput.fill(HERO_NAME);
     // React controlled inputs sometimes ignore Playwright's fill — dispatch input event
     await nameInput.evaluate((el: HTMLInputElement, val: string) => {
       const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
       setter?.call(el, val);
       el.dispatchEvent(new Event("input", { bubbles: true }));
-    }, "Pjotrs Avens");
+    }, HERO_NAME);
     await page.waitForTimeout(1200); // let VariantPreview render
   } else {
     console.warn(`[01] full-name input not found — capturing empty form`);
