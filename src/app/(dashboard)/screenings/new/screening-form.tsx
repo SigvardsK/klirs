@@ -44,6 +44,13 @@ const JURISDICTIONS = [
   { value: "LV", label: "Latvia" },
 ];
 
+// Freemium gate: non-superusers get DEMO_LIMIT screenings before being asked
+// to email about a pilot. Superusers bypass entirely (env-var gated).
+const DEMO_LIMIT = 3;
+const DEMO_LIMIT_SENTINEL = "__DEMO_LIMIT_REACHED__";
+const CONTACT_HREF =
+  "mailto:sigvards@krongorns.com?subject=Klirs%20pilot%20%E2%80%94%20more%20screenings";
+
 /**
  * Client form component. `isSuperuser` is computed server-side in the parent
  * page.tsx wrapper (which can read SUPERUSER_EMAILS from env) and passed in.
@@ -140,8 +147,8 @@ export function ScreeningForm({ isSuperuser }: { isSuperuser: boolean }) {
           .select("*", { count: "exact", head: true })
           .eq("created_by", user.id);
 
-        if ((count || 0) >= 1) {
-          setError("Demo limit reached. Contact us for additional screenings.");
+        if ((count || 0) >= DEMO_LIMIT) {
+          setError(DEMO_LIMIT_SENTINEL);
           setLoading(false);
           return;
         }
@@ -431,7 +438,26 @@ export function ScreeningForm({ isSuperuser }: { isSuperuser: boolean }) {
             </div>
             )}
 
-            {error && (
+            {error && error === DEMO_LIMIT_SENTINEL && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+                <p className="text-sm font-semibold text-amber-200 mb-1">
+                  Demo limit reached ({DEMO_LIMIT} screenings)
+                </p>
+                <p className="text-sm text-slate-300 mb-3 leading-relaxed">
+                  You&rsquo;ve hit the free-tier limit. Drop us a line and
+                  we&rsquo;ll get you set up with a pilot — full access, no
+                  watermarks, audit-ready evidence bundles.
+                </p>
+                <a
+                  href={CONTACT_HREF}
+                  className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-medium px-4 py-2 rounded-md text-sm transition-colors"
+                >
+                  Email us about a pilot →
+                </a>
+              </div>
+            )}
+
+            {error && error !== DEMO_LIMIT_SENTINEL && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
                 <p className="text-sm text-red-400">{error}</p>
               </div>
