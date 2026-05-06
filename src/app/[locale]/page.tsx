@@ -17,6 +17,7 @@ import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/lib/i18n/routing";
 import LocaleSwitcher from "@/components/locale-switcher";
+import { ProductShowcase } from "@/components/product-showcase";
 
 const TRY_OUT_HREF = "/login";
 const GITHUB_HREF = "https://github.com/SigvardsK/klirs";
@@ -209,8 +210,8 @@ export default async function MarketingPage({
                 {t("productShowcase.title")}
               </h2>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {[
+            <ProductShowcase
+              images={[
                 {
                   src: "/screenshots/analysis.png",
                   alt: "Analysis tab — risk score and breakdown",
@@ -226,19 +227,8 @@ export default async function MarketingPage({
                   alt: "Summary with pre-filled compliance documentation",
                   caption: t("productShowcase.captions.summary"),
                 },
-              ].map((s) => (
-                <figure
-                  key={s.src}
-                  className="rounded-lg border border-white/10 bg-slate-800/50 overflow-hidden"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={s.src} alt={s.alt} className="w-full h-auto" />
-                  <figcaption className="p-4 text-sm text-slate-300 leading-relaxed">
-                    {s.caption}
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
+              ]}
+            />
           </div>
         </section>
 

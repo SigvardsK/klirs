@@ -7,37 +7,37 @@
   },
   "hero": {
     "eyebrow": "Atvērtā koda sankciju un klientu izpētes pārbaudes · AGPL-3.0",
-    "title": "Auditējama AML pārbaude.",
-    "subhead": "Klirs ir atvērtā koda pārbaudes risinājums atbilstības speciālistiem. Katra pārbaude piegādā avota lapas ekrānuzņēmumus ar laika zīmogu, pārredzamu riska novērtējumu un iepriekš aizpildītu dokumentāciju.",
+    "title": "Automatizēta AML pārbaude.",
+    "subhead": "Klirs ir atvērtā koda risinājums AML/KYC speciālistiem. Katra pārbaude piegādā avota lapas ekrānuzņēmumus ar laika zīmogu, pārredzamu riska novērtējumu un aizpildītu dokumentāciju.",
     "ctaPrimary": "Pamēģini",
     "ctaSecondary": "GitHub"
   },
   "audit": {
-    "title": "Izlasiet katru rindu, kas radīja jūsu pierādījumus.",
-    "quote": "Izlasiet, izpildiet un auditējiet katru rindu, kas radīja jūsu pierādījumus.",
+    "title": "Katra rinda auditējama un pierādāma.",
+    "quote": "Katra izpētes darbība izsekojama un caurskatāma.",
     "body": "Klirs ir licencēts saskaņā ar <strong>AGPL-3.0</strong>."
   },
   "forWhom": {
     "title": "Kam Klirs ir paredzēts.",
     "advokatiTitle": "Juristiem",
-    "advokatiBody": "Dokumentācija iepriekš aizpildīta no katras pārbaudes. Ievietojiet tieši klienta lietā.",
+    "advokatiBody": "Automātiski sagatavota dokumentācija katrai pārbaudei.",
     "complianceTitle": "Iekšējiem atbilstības speciālistiem",
-    "complianceBody": "ES, ANO, ASV un Lielbritānijas sankcijas, PEP saraksti un publiskā informācija — vienā pārbaudē. Pierādījumu trase ar laika zīmogu, ko revidents pieņems vēl 18 mēnešus pēc pārbaudes.",
+    "complianceBody": "ES, ANO, ASV un Lielbritānijas sankcijas, PEP saraksti un publiskā informācija — vienā pārbaudē. Pārbaudes marķētas ar laika zīmogu.",
     "vaspTitle": "Grāmatvežiem",
-    "vaspBody": "Klientu uzņemšanas līmeņa pārbaude tādā ātrumā, kāds nepieciešams jūsu rindai."
+    "vaspBody": "Jaunu klientu pieņemšanas pārbaude nepalielinot administratīvo slogu."
   },
   "registers": {
-    "title": "Saskaņots ar atbilstības realitāti.",
+    "title": "Balstīts uz labāko praksi.",
     "body": "Datu avoti: FID konsolidētie sankciju saraksti (caur Firmas.lv), VID PNP, VID VAD, Latvijas Uzņēmumu reģistrs, OFAC SDN, Lielbritānijas sankcijas, daudzvalodu publiskā informācija (LV / EN / RU / ET). Atbilst ES AML6 direktīvai."
   },
   "features": {
     "title": "Ko sniedz katra pārbaude.",
     "evidenceTitle": "Revidentu standartiem atbilstošs pierādījumu kopums",
-    "evidenceBody": "Avota lapas ekrānuzņēmums un URL katrai pārbaudei. Eksportēts kā PDF + DOCX pakete, ko uzraugošā iestāde pieņems vēl 18 mēnešus pēc pārbaudes.",
+    "evidenceBody": "Avota lapas ekrānuzņēmums un URL katrai pārbaudei. Eksportēts kā PDF + DOCX pakete.",
     "coverageTitle": "Vairāku avotu aptvērums",
     "coverageBody": "OFAC SDN, Lielbritānijas sankcijas, ES / ANO / Austrālijas konsolidētās sankcijas, Latvijas PEP / amatpersonu deklarācijas, Latvijas Uzņēmumu reģistrs, daudzvalodu publiskās ziņas (LV / EN / RU / ET).",
-    "annexTitle": "Iepriekš aizpildīti padomes pielikumi",
-    "annexBody": "P2 (klienta identifikācija un izpēte), P3.1 (klienta riska novērtējums) un P3.2 (padziļinātā izpēte) — Latvijas Zvērinātu advokātu padomes veidlapas, automātiski aizpildītas no katras pārbaudes. Ievietojiet tās tieši klienta lietā."
+    "annexTitle": "Iepriekš sagatavoti pielikumi",
+    "annexBody": "P2 (klienta identifikācija un izpēte), P3.1 (klienta riska novērtējums) un P3.2 (padziļinātā izpēte) — dokumentācija automātiski aizpildīta pēc katras pārbaudes."
   },
   "productShowcase": {
     "title": "Skatieties darbībā.",
@@ -49,9 +49,9 @@
   },
   "cta": {
     "title": "Vai vajadzīgs pielāgots risinājums?",
-    "body": "Klirs ir atvērtā koda projekts, kas mazina atbilstības speciālistu administratīvo slogu. Ja vēlaties pilnu piekļuvi — sazinieties!",
+    "body": "Klirs ir atvērtā koda projekts, kas mazina atbilstības speciālistu administratīvo slogu. Ja vēlies pielāgotu risinājumu — sazinies!",
     "button": "Pamēģini!",
-    "buttonReachOut": "Sazinieties!"
+    "buttonReachOut": "Sazinies!"
   },
   "footer": {
     "tagline": "Klirs — atvērtā koda AML pārbaude",
