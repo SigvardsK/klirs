@@ -51,7 +51,7 @@ export default async function DashboardPage() {
             <Button
               disabled
               className="bg-slate-800 text-slate-500 cursor-not-allowed"
-              title={`Demo limit reached (${DEMO_LIMIT} screenings) — email us about a pilot`}
+              title={`Demo limit reached (${DEMO_LIMIT} screenings) — reach out for full access`}
             >
               <Plus className="w-4 h-4 mr-2" />
               New Screening
@@ -138,16 +138,16 @@ export default async function DashboardPage() {
                     Demo Limit Reached ({DEMO_LIMIT} screenings)
                   </h3>
                   <p className="text-sm text-slate-400 mb-4 leading-relaxed">
-                    You&rsquo;ve used your {DEMO_LIMIT} free screenings. Drop us a line
-                    and we&rsquo;ll get you set up with a pilot — full access, no
-                    watermarks, audit-ready evidence bundles.
+                    You&rsquo;ve used your {DEMO_LIMIT} free screenings. Want more?
+                    Full access, custom documentation and audit-ready evidence
+                    bundles.
                   </p>
                   <div className="flex flex-wrap items-center gap-3">
                     <a
                       href={DEMO_CONTACT_HREF}
                       className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-medium px-4 py-2 rounded-md text-sm transition-colors"
                     >
-                      Email us about a pilot →
+                      Reach out
                     </a>
                     <Link
                       href="/demo"

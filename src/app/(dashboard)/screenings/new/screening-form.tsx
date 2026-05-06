@@ -442,15 +442,15 @@ export function ScreeningForm({ isSuperuser }: { isSuperuser: boolean }) {
                   Demo limit reached ({DEMO_LIMIT} screenings)
                 </p>
                 <p className="text-sm text-slate-300 mb-3 leading-relaxed">
-                  You&rsquo;ve hit the free-tier limit. Drop us a line and
-                  we&rsquo;ll get you set up with a pilot — full access, no
-                  watermarks, audit-ready evidence bundles.
+                  You&rsquo;ve used your {DEMO_LIMIT} free screenings. Want more?
+                  Full access, custom documentation and audit-ready evidence
+                  bundles.
                 </p>
                 <a
                   href={DEMO_CONTACT_HREF}
                   className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-medium px-4 py-2 rounded-md text-sm transition-colors"
                 >
-                  Email us about a pilot →
+                  Reach out
                 </a>
               </div>
             )}
