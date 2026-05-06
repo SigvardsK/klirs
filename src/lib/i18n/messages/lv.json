@@ -28,7 +28,7 @@
   },
   "registers": {
     "title": "Balstīts uz labāko praksi.",
-    "body": "Datu avoti: FID konsolidētie sankciju saraksti (caur Firmas.lv), VID PNP, VID VAD, Latvijas Uzņēmumu reģistrs, OFAC SDN, Lielbritānijas sankcijas, daudzvalodu publiskā informācija (LV / EN / RU / ET). Atbilst ES AML6 direktīvai."
+    "body": "Datu avoti: FID konsolidētie sankciju saraksti (caur Firmas.lv), VID PNP, VID VAD, Latvijas Uzņēmumu reģistrs, OFAC SDN, Lielbritānijas sankcijas, daudzvalodu publiskā informācija (LV / EN / RU / ET). Balstities uz ES AML6 direktīvu."
   },
   "features": {
     "title": "Ko sniedz katra pārbaude.",
@@ -42,13 +42,13 @@
   "productShowcase": {
     "title": "Skatieties darbībā.",
     "captions": {
-      "analysis": "Pārredzams riska novērtējums ar kategoriju sadalījumu — katrs ieguldījums izsekojams līdz avotam.",
-      "checks": "Vairāku avotu pārbaude vienā ciklā — katrs datu bāzes pieprasījums, statuss un laika zīmogs reģistrēts.",
-      "summary": "Auditētājiem gatavs kopsavilkums ar iepriekš aizpildītu atbilstības dokumentāciju — ievietojiet tieši klienta lietā."
+      "analysis": "Caurskatāms riska novērtējums ar kategoriju sadalījumu — izsekojams līdz avotam.",
+      "checks": "Vairāku avotu pārbaude vienā ciklā — ar statuss, ekrānuzņēmumu un laika zīmogu.",
+      "summary": "Kopsavilkums ar iepriekš aizpildītu dokumentāciju."
     }
   },
   "cta": {
-    "title": "Vai vajadzīgs pielāgots risinājums?",
+    "title": "Vēlies pielāgotu risinājumu?",
     "body": "Klirs ir atvērtā koda projekts, kas mazina atbilstības speciālistu administratīvo slogu. Ja vēlies pielāgotu risinājumu — sazinies!",
     "button": "Pamēģini!",
     "buttonReachOut": "Sazinies!"
