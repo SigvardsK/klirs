@@ -1006,12 +1006,12 @@ export function ScreeningViewer({ screening: initialScreening, checks: initialCh
             <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-6 text-center">
               <Shield className="w-8 h-8 text-emerald-500 mx-auto mb-3" />
               <h3 className="text-white font-medium mb-2">
-                {demoMode ? "Run Your Own AML Screening" : "Get Full Analysis & Compliance Documentation"}
+                {demoMode ? "Run Your Own AML Screening" : "Want A Full Analysis & Compliance Documentation?"}
               </h3>
               <p className="text-sm text-slate-400 mb-4 max-w-md mx-auto">
                 {demoMode
                   ? "Sign in to screen any entity across 8+ databases with automated evidence collection. Your first screening is free."
-                  : "Receive expert risk evaluation, pre-filled compliance forms, regulatory filing guidance, and ongoing monitoring setup."}
+                  : "Receive risk evaluation, pre-filled compliance forms, regulatory filing guidance, and ongoing monitoring setup."}
               </p>
               {demoMode ? (
                 <a
@@ -1023,12 +1023,10 @@ export function ScreeningViewer({ screening: initialScreening, checks: initialCh
                 </a>
               ) : (
                 <a
-                  href="https://github.com/SigvardsK/klirs/issues/new"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="mailto:sigvards@krongorns.com"
                   className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
                 >
-                  Open an issue on GitHub
+                  Reach out
                   <ExternalLink className="w-4 h-4" />
                 </a>
               )}

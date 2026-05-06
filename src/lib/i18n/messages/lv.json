@@ -7,28 +7,28 @@
   },
   "hero": {
     "eyebrow": "Atvērtā koda sankciju un klientu izpētes pārbaudes · AGPL-3.0",
-    "title": "Auditējama AML/KYC pārbaude, kas atsakās klusi attaisnot bez pierādījumiem.",
-    "subhead": "Klirs ir atvērtā koda sankciju pārbaudes risinājums Latvijas un ES atbilstības speciālistiem. Katra pārbaude piegādā avota lapas ekrānuzņēmumus ar laika zīmogu, pārredzamu riska novērtējumu un iepriekš aizpildītus Latvijas Zvērinātu advokātu padomes pielikumus (P2 / P3.1 / P3.2). Mākoņa versija tiks palaista maija beigās.",
+    "title": "Auditējama AML pārbaude.",
+    "subhead": "Klirs ir atvērtā koda pārbaudes risinājums atbilstības speciālistiem. Katra pārbaude piegādā avota lapas ekrānuzņēmumus ar laika zīmogu, pārredzamu riska novērtējumu un iepriekš aizpildītu dokumentāciju.",
     "ctaPrimary": "Pamēģini",
-    "ctaSecondary": "Lasīt pirmkodu GitHubā"
+    "ctaSecondary": "GitHub"
   },
   "audit": {
     "title": "Izlasiet katru rindu, kas radīja jūsu pierādījumus.",
-    "quote": "Izlasiet, izpildiet un auditējiet katru rindu, kas radīja jūsu pierādījumus. Neviens piegādātājs nevar paslēpt sankciju saraksta izlaidumu melnajā kastē.",
-    "body": "Klirs ir licencēts saskaņā ar <strong>AGPL-3.0</strong>. Klasifikators ir veidots pēc divu apstiprinājumu principa: <code>clear</code> spriedums prasa pozitīvus pierādījumus no avota lapas — klusa <code>clear</code> pārbaude par sankcijām pakļautām personām vai organizācijām ir līguma pārkāpums, nevis nemanāma kļūda. Slēgtā pirmkoda konkurenti strukturāli nespēj sniegt šādu apgalvojumu."
+    "quote": "Izlasiet, izpildiet un auditējiet katru rindu, kas radīja jūsu pierādījumus.",
+    "body": "Klirs ir licencēts saskaņā ar <strong>AGPL-3.0</strong>."
   },
   "forWhom": {
     "title": "Kam Klirs ir paredzēts.",
-    "advokatiTitle": "Latvijas zvērinātiem advokātiem",
-    "advokatiBody": "P2, P3.1 un P3.2 pielikumi tiek iepriekš aizpildīti no katras pārbaudes — gatavi ievietošanai klienta lietā. Metodika ir auditējama rindu pa rindai, ja Zvērinātu advokātu padome to pieprasa.",
+    "advokatiTitle": "Juristiem",
+    "advokatiBody": "Dokumentācija iepriekš aizpildīta no katras pārbaudes. Ievietojiet tieši klienta lietā.",
     "complianceTitle": "Iekšējiem atbilstības speciālistiem",
-    "complianceBody": "ES, ANO, ASV, Lielbritānijas un Austrālijas sankcijas, Latvijas PEP saraksti un publiskā informācija — vienā pārbaudē. Pierādījumu trase ar laika zīmogu, ko revidents pieņems vēl 18 mēnešus pēc pārbaudes.",
-    "vaspTitle": "Latvijas un Igaunijas kriptoaktīvu pakalpojumu sniedzējiem",
-    "vaspBody": "Klientu uzņemšanas līmeņa pārbaude tādā ātrumā, kāds nepieciešams jūsu rindai. Maksa par pārbaudi nodrošina, ka jūsu vienības ekonomika izdzīvo intensīvā mēnesī."
+    "complianceBody": "ES, ANO, ASV un Lielbritānijas sankcijas, PEP saraksti un publiskā informācija — vienā pārbaudē. Pierādījumu trase ar laika zīmogu, ko revidents pieņems vēl 18 mēnešus pēc pārbaudes.",
+    "vaspTitle": "Grāmatvežiem",
+    "vaspBody": "Klientu uzņemšanas līmeņa pārbaude tādā ātrumā, kāds nepieciešams jūsu rindai."
   },
   "registers": {
-    "title": "Saskaņots ar Latvijas atbilstības realitāti.",
-    "body": "Datu avoti: Firmas.lv (FID konsolidētie sankciju saraksti), VID PNP, VID VAD, Latvijas Uzņēmumu reģistrs, OFAC SDN, Lielbritānijas sankcijas, daudzvalodu publiskā informācija (LV / EN / RU / ET). Atbilst ES AML6 direktīvai un Padomes Instrukcijai NILLTPFN-SL."
+    "title": "Saskaņots ar atbilstības realitāti.",
+    "body": "Datu avoti: FID konsolidētie sankciju saraksti (caur Firmas.lv), VID PNP, VID VAD, Latvijas Uzņēmumu reģistrs, OFAC SDN, Lielbritānijas sankcijas, daudzvalodu publiskā informācija (LV / EN / RU / ET). Atbilst ES AML6 direktīvai."
   },
   "features": {
     "title": "Ko sniedz katra pārbaude.",
@@ -39,15 +39,19 @@
     "annexTitle": "Iepriekš aizpildīti padomes pielikumi",
     "annexBody": "P2 (klienta identifikācija un izpēte), P3.1 (klienta riska novērtējums) un P3.2 (padziļinātā izpēte) — Latvijas Zvērinātu advokātu padomes veidlapas, automātiski aizpildītas no katras pārbaudes. Ievietojiet tās tieši klienta lietā."
   },
-  "demoVideo": {
+  "productShowcase": {
     "title": "Skatieties darbībā.",
-    "body": "90 sekunžu pārskats par pilnu pārbaudes ciklu — no datu ievades līdz pierādījumu paketes eksportam.",
-    "placeholder": "Demonstrācijas video — drīzumā"
+    "captions": {
+      "analysis": "Pārredzams riska novērtējums ar kategoriju sadalījumu — katrs ieguldījums izsekojams līdz avotam.",
+      "checks": "Vairāku avotu pārbaude vienā ciklā — katrs datu bāzes pieprasījums, statuss un laika zīmogs reģistrēts.",
+      "summary": "Auditētājiem gatavs kopsavilkums ar iepriekš aizpildītu atbilstības dokumentāciju — ievietojiet tieši klienta lietā."
+    }
   },
   "cta": {
-    "title": "Mākoņa versija tiks palaista maija beigās.",
-    "body": "Klirs ir pilotfāzē līdz 2026. gada 8. maijam — pēc tam cenas tiek fiksētas hibrīda darba vietu un pārbaužu paketes modelim. Pieslēdzieties ar e-pastu un veiciet pirmo pārbaudi mazāk nekā minūtē.",
-    "button": "Pamēģini"
+    "title": "Vai vajadzīgs pielāgots risinājums?",
+    "body": "Klirs ir atvērtā koda projekts, kas mazina atbilstības speciālistu administratīvo slogu. Ja vēlaties pilnu piekļuvi — sazinieties!",
+    "button": "Pamēģini!",
+    "buttonReachOut": "Sazinieties!"
   },
   "footer": {
     "tagline": "Klirs — atvērtā koda AML pārbaude",

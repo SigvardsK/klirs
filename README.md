@@ -21,7 +21,7 @@ Open-source engine · Self-hostable · AGPL-3.0
 ---
 
 <p align="center">
-  <img src="./public/screenshots/04-analysis.png" alt="Analysis tab — risk score, breakdown table, and audit-ready exports" width="900">
+  <img src="./public/screenshots/analysis.png" alt="Analysis tab — risk score, breakdown table, and audit-ready exports" width="900">
 </p>
 
 > [!NOTE]
@@ -38,25 +38,21 @@ The engine refuses to default to "clean" — every `clear` verdict requires a po
 
 <table>
   <tr>
-    <td width="33%" align="center">
-      <a href="./public/screenshots/01-form.png"><img src="./public/screenshots/01-form.png" alt="New screening form with auto-derived alias preview"></a>
-      <br><sub><b>1. Submit</b> — auto-derives spelling variants from the name you enter</sub>
+    <td width="50%" align="center">
+      <a href="./public/screenshots/checks.png"><img src="./public/screenshots/checks.png" alt="Per-source check status with auto-variant badges"></a>
+      <br><sub><b>1. Watch checks land</b> — per-source status, auto-variant badges, source links</sub>
     </td>
-    <td width="33%" align="center">
-      <a href="./public/screenshots/02-progress.png"><img src="./public/screenshots/02-progress.png" alt="Per-source check status with auto-variant badges"></a>
-      <br><sub><b>2. Watch checks land</b> — per-source status, auto-variant badges, source links</sub>
-    </td>
-    <td width="33%" align="center">
-      <a href="./public/screenshots/03-evidence.png"><img src="./public/screenshots/03-evidence.png" alt="Evidence grid showing captured source-page screenshots"></a>
-      <br><sub><b>3. Browse evidence</b> — every check carries the source-page screenshot</sub>
+    <td width="50%" align="center">
+      <a href="./public/screenshots/screenshots-grid.png"><img src="./public/screenshots/screenshots-grid.png" alt="Evidence grid showing captured source-page screenshots"></a>
+      <br><sub><b>2. Browse evidence</b> — every check carries the source-page screenshot</sub>
     </td>
   </tr>
 </table>
 
-The completed PDF that lands in the auditor's inbox:
+The audit-ready summary with pre-filled compliance documentation:
 
 <p align="center">
-  <a href="./public/screenshots/05-pdf-page.png"><img src="./public/screenshots/05-pdf-page.png" alt="First page of the audit PDF — verdict, category-weighted breakdown, evidence index" width="600"></a>
+  <a href="./public/screenshots/summary.png"><img src="./public/screenshots/summary.png" alt="Audit-ready summary with pre-filled compliance documentation" width="600"></a>
 </p>
 
 ---

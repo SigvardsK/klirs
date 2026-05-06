@@ -201,19 +201,43 @@ export default async function MarketingPage({
           </div>
         </section>
 
-        {/* Demo video placeholder */}
+        {/* Product showcase */}
         <section className="border-y border-white/10 bg-slate-900/40">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-            <div className="max-w-3xl">
+            <div className="max-w-3xl mb-12">
               <h2 className="text-3xl font-semibold tracking-tight">
-                {t("demoVideo.title")}
+                {t("productShowcase.title")}
               </h2>
-              <p className="mt-4 text-slate-300">{t("demoVideo.body")}</p>
-              <div className="mt-8 aspect-video rounded-lg border border-white/10 bg-slate-800/50 flex items-center justify-center">
-                <p className="text-slate-400 text-sm">
-                  {t("demoVideo.placeholder")}
-                </p>
-              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {[
+                {
+                  src: "/screenshots/analysis.png",
+                  alt: "Analysis tab — risk score and breakdown",
+                  caption: t("productShowcase.captions.analysis"),
+                },
+                {
+                  src: "/screenshots/checks.png",
+                  alt: "Checks tab — multi-source coverage",
+                  caption: t("productShowcase.captions.checks"),
+                },
+                {
+                  src: "/screenshots/summary.png",
+                  alt: "Summary with pre-filled compliance documentation",
+                  caption: t("productShowcase.captions.summary"),
+                },
+              ].map((s) => (
+                <figure
+                  key={s.src}
+                  className="rounded-lg border border-white/10 bg-slate-800/50 overflow-hidden"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={s.src} alt={s.alt} className="w-full h-auto" />
+                  <figcaption className="p-4 text-sm text-slate-300 leading-relaxed">
+                    {s.caption}
+                  </figcaption>
+                </figure>
+              ))}
             </div>
           </div>
         </section>
@@ -225,13 +249,21 @@ export default async function MarketingPage({
               {t("cta.title")}
             </h2>
             <p className="mt-4 text-slate-300 leading-relaxed">{t("cta.body")}</p>
-            <a
-              href={TRY_OUT_HREF}
-              className="mt-8 inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-6 py-3 rounded-md transition-colors"
-            >
-              {t("cta.button")}
-              <ArrowRight className="w-4 h-4" />
-            </a>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <a
+                href={TRY_OUT_HREF}
+                className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-6 py-3 rounded-md transition-colors"
+              >
+                {t("cta.button")}
+                <ArrowRight className="w-4 h-4" />
+              </a>
+              <a
+                href="mailto:sigvards@krongorns.com"
+                className="inline-flex items-center gap-2 border border-white/15 hover:border-emerald-500/50 hover:text-emerald-400 px-6 py-3 rounded-md transition-colors"
+              >
+                {t("cta.buttonReachOut")}
+              </a>
+            </div>
           </div>
         </section>
       </main>

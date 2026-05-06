@@ -7,28 +7,28 @@
   },
   "hero": {
     "eyebrow": "Open-source AML/KYC screening · AGPL-3.0",
-    "title": "Audit-ready AML screening, engineered to refuse silent false-clears.",
-    "subhead": "Klirs is an open-source screening engine for Latvian and EU compliance buyers. Every verdict carries timestamped source-page screenshots, a transparent risk score, and pre-filled Latvian Bar Association annexes. Hosted version launches late May.",
+    "title": "Audit-ready AML screening.",
+    "subhead": "Klirs is an open-source screening workflow for compliance buyers. Every screening carries timestamped source-page screenshots, a transparent risk score, and pre-filled documentation.",
     "ctaPrimary": "Try it out",
-    "ctaSecondary": "Read the engine on GitHub"
+    "ctaSecondary": "GitHub"
   },
   "audit": {
     "title": "Read every line that produced your evidence.",
-    "quote": "Read, run, and audit every line that produced your evidence. No vendor can hide a sanctions-list omission behind a black box.",
-    "body": "Klirs is licensed under <strong>AGPL-3.0</strong>. The dual-affirmative classifier means a <code>clear</code> verdict requires positive proof from the source page — silent false-clears on sanctioned entities are a contract violation, not a quiet bug. Proprietary competitors structurally cannot make this claim."
+    "quote": "Read, run, and audit every line that produced your evidence.",
+    "body": "Klirs is licensed under <strong>AGPL-3.0</strong>."
   },
   "forWhom": {
     "title": "Who Klirs is for.",
-    "advokatiTitle": "Latvian advokāti",
-    "advokatiBody": "P2, P3.1, and P3.2 annexes pre-filled from each verdict. Drop straight into the client file. Methodology is auditable line-by-line if the Bar Council asks.",
+    "advokatiTitle": "Lawyers",
+    "advokatiBody": "Documentation pre-filled from each screening. Drop straight into the client file.",
     "complianceTitle": "In-house compliance officers",
-    "complianceBody": "EU + UN + US + UK + AU sanctions plus Latvian PEP and adverse media in one screening. Timestamped evidence trail your auditor will accept 18 months later.",
-    "vaspTitle": "LV / EE crypto-VASPs",
-    "vaspBody": "Onboarding-grade screening at the speed your queue demands. Per-screening pricing means your unit economics survive a busy month."
+    "complianceBody": "EU + UN + US + UK sanctions plus PEP and adverse media in one screening. Timestamped evidence trail your auditor will accept 18 months later.",
+    "vaspTitle": "Accountants",
+    "vaspBody": "Onboarding-grade screening at the speed your queue demands."
   },
   "registers": {
-    "title": "Anchored in Latvian compliance reality.",
-    "body": "Data sources: Firmas.lv (FID consolidated sanctions), VID PNP, VID VAD, Latvian Business Register (Uzņēmumu reģistrs), OFAC SDN, UK Sanctions, multilingual adverse media (LV / EN / RU / ET). Aligned with EU AML6 and Padomes Instrukcija NILLTPFN-SL."
+    "title": "Anchored in compliance reality.",
+    "body": "Data sources: FID consolidated sanctions (via Firmas.lv), VID PNP, VID VAD, Latvian Business Register (Uzņēmumu reģistrs), OFAC SDN, UK Sanctions, multilingual adverse media (LV / EN / RU / ET). Aligned with EU AML6."
   },
   "features": {
     "title": "What every screening produces.",
@@ -39,15 +39,19 @@
     "annexTitle": "Pre-filled Bar annexes",
     "annexBody": "P2 (client identification & due diligence), P3.1 (client risk assessment), and P3.2 (enhanced due diligence) — Latvian Bar Association templates auto-populated from each verdict. Drop straight into your client file."
   },
-  "demoVideo": {
+  "productShowcase": {
     "title": "See it in action.",
-    "body": "A 90-second walkthrough of an end-to-end screening — entity input through evidence-bundle export.",
-    "placeholder": "Demo video — coming soon"
+    "captions": {
+      "analysis": "Transparent risk scoring with category-weighted breakdown — every contribution traced to source.",
+      "checks": "Multi-source coverage in one screening — every database check, status, and timestamp captured.",
+      "summary": "Audit-ready summary with pre-filled compliance documentation — drop straight into the client file."
+    }
   },
   "cta": {
-    "title": "Hosted version launches late May.",
-    "body": "Klirs is in pilot through 2026-05-08 — pricing locks after that on a hybrid seat + per-screening pack model. Sign in with your email and run your first screening in under a minute.",
-    "button": "Try it out"
+    "title": "Need a More Detailed Custom Workflow?",
+    "body": "Klirs is an open-source project aimed to reduce administrative burden for compliance personnel. If you'd like to get full access, reach out!",
+    "button": "Try it out!",
+    "buttonReachOut": "Reach out!"
   },
   "footer": {
     "tagline": "Klirs — open-source AML screening",
