@@ -38,6 +38,35 @@ function getOriginSafe(request: Request): string {
   }
 }
 
+/**
+ * Brave Shields drops Set-Cookie on cross-origin → redirect chains in
+ * incognito. The OAuth flow is one such chain (klirs → supabase → google →
+ * supabase → klirs/auth/callback). Returning a 307 with Set-Cookie + Location
+ * triggers the heuristic and the session cookie is dropped. Land on a 200
+ * HTML page instead so cookies stick before navigation; the cookies set via
+ * the @supabase/ssr `setAll` callback ride on whatever Response we return
+ * from the Route Handler.
+ *
+ * Same root cause class as LR-2026-001 (different leg of the chain).
+ */
+function htmlRedirect(targetPath: string): NextResponse {
+  // targetPath is internal-only ("/dashboard", "/login?…") — no untrusted
+  // input is interpolated into the HTML. JSON.stringify quotes it safely
+  // for the JS string literal.
+  const html = `<!doctype html><html><head>
+<meta http-equiv="refresh" content="0;url=${targetPath}">
+<title>Signing in…</title>
+<script>window.location.replace(${JSON.stringify(targetPath)});</script>
+</head><body><p>Signing in…</p></body></html>`;
+  return new NextResponse(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store, max-age=0",
+    },
+  });
+}
+
 async function exchangeCodeWithStoredVerifier(
   code: string,
   state: string
@@ -178,7 +207,11 @@ export async function GET(request: Request) {
 
     const name = user.user_metadata?.full_name || user.user_metadata?.name;
     const email = user.email;
-    const { error: upsertError } = await supabase.from("profiles").upsert(
+    // Admin client bypasses RLS. Payload is constrained to fields derived from
+    // the verified getUser() result, so this is safe — and decouples the
+    // post-auth metadata sync from RLS policy drift.
+    const adminForUpsert = createAdminClient();
+    const { error: upsertError } = await adminForUpsert.from("profiles").upsert(
       {
         id: user.id,
         full_name: name || email?.split("@")[0] || "User",
@@ -196,7 +229,7 @@ export async function GET(request: Request) {
       );
     }
 
-    return NextResponse.redirect(`${origin}/dashboard`);
+    return htmlRedirect("/dashboard");
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     const name = err instanceof Error ? err.name : "UnknownError";

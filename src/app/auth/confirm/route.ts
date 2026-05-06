@@ -19,6 +19,7 @@
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { EmailOtpType } from "@supabase/supabase-js";
 
 function getOrigin(request: Request): string {
@@ -30,6 +31,28 @@ function getOrigin(request: Request): string {
     return `${forwardedProto}://${host}`;
   }
   return new URL(request.url).origin;
+}
+
+/**
+ * 200 HTML interstitial instead of 307 redirect on success — Brave Shields
+ * drops Set-Cookie on cross-origin → redirect chains in incognito (magic
+ * link is clicked from an email client, often a different origin). Cookies
+ * set via the @supabase/ssr `setAll` callback ride on whatever Response we
+ * return. Mirrors /auth/callback. See LR-2026-001 for class context.
+ */
+function htmlRedirect(targetPath: string): NextResponse {
+  const html = `<!doctype html><html><head>
+<meta http-equiv="refresh" content="0;url=${targetPath}">
+<title>Signing in…</title>
+<script>window.location.replace(${JSON.stringify(targetPath)});</script>
+</head><body><p>Signing in…</p></body></html>`;
+  return new NextResponse(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store, max-age=0",
+    },
+  });
 }
 
 const VALID_OTP_TYPES: ReadonlySet<EmailOtpType> = new Set([
@@ -97,7 +120,11 @@ export async function GET(request: Request) {
 
     const name = user.user_metadata?.full_name || user.user_metadata?.name;
     const email = user.email;
-    const { error: upsertError } = await supabase.from("profiles").upsert(
+    // Admin client bypasses RLS. Payload is constrained to fields derived from
+    // the verified getUser() result, so this is safe — and decouples the
+    // post-auth metadata sync from RLS policy drift.
+    const adminForUpsert = createAdminClient();
+    const { error: upsertError } = await adminForUpsert.from("profiles").upsert(
       {
         id: user.id,
         full_name: name || email?.split("@")[0] || "User",
@@ -115,7 +142,7 @@ export async function GET(request: Request) {
       );
     }
 
-    return NextResponse.redirect(`${origin}/dashboard`);
+    return htmlRedirect("/dashboard");
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     const name = err instanceof Error ? err.name : "UnknownError";

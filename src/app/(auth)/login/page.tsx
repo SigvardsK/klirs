@@ -140,6 +140,9 @@ export default async function LoginPage({
                     Sign in with Google
                   </button>
                 </form>
+                <p className="text-[11px] text-slate-500 text-center mt-2">
+                  Browser blocking Google sign-in? Use the email link above.
+                </p>
               </>
             )}
 

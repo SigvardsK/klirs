@@ -69,11 +69,13 @@ alter table profiles enable row level security;
 alter table screenings enable row level security;
 alter table screening_checks enable row level security;
 
--- Profiles: users can read/update their own profile
+-- Profiles: users can read/update/insert their own profile
 create policy "Users can view own profile"
   on profiles for select using (auth.uid() = id);
 create policy "Users can update own profile"
   on profiles for update using (auth.uid() = id);
+create policy "Users can insert own profile"
+  on profiles for insert with check (auth.uid() = id);
 
 -- Screenings: users can CRUD their own screenings
 create policy "Users can view own screenings"
