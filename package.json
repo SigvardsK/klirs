@@ -9,6 +9,7 @@
     "lint": "eslint",
     "check:i18n": "npx tsx scripts/check-i18n.ts",
     "smoke:sanctioned": "npx tsx scripts/smoke-test-sanctioned.ts",
+    "smoke:auth": "npx tsx scripts/smoke-test-auth.ts",
     "red-team:auth": "npx tsx scripts/red-team/auth-setup.ts",
     "red-team:run": "npx tsx scripts/red-team/run-cases.ts"
   },
