@@ -32,12 +32,14 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isMarketingPath = pathname === "/" || /^\/lv(\/.*)?$/.test(pathname);
 
-  // Allow access to marketing page (any locale), login, auth callback, demo, and API health check
+  // Allow access to marketing page (any locale), login, auth callback, demo
+  // (page + API routes), and API health check.
   const isPublicRoute =
     isMarketingPath ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/auth") ||
     pathname.startsWith("/demo") ||
+    pathname.startsWith("/api/demo") ||
     pathname === "/api/health" ||
     pathname.startsWith("/api/test");
 
