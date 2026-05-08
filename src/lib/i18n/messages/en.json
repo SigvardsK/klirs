@@ -9,8 +9,9 @@
     "eyebrow": "Open-source AML/KYC screening · AGPL-3.0",
     "title": "Audit-ready AML screening.",
     "subhead": "Klirs is an open-source screening workflow for compliance buyers. Every screening carries timestamped source-page screenshots, a transparent risk score, and pre-filled documentation.",
-    "ctaPrimary": "Try it out",
-    "ctaSecondary": "GitHub"
+    "ctaPrimary": "Try the interactive demo",
+    "ctaBookDemo": "Book a 20-min demo",
+    "ctaSource": "Source on GitHub"
   },
   "audit": {
     "title": "Read every line that produced your evidence.",
@@ -48,10 +49,10 @@
     }
   },
   "cta": {
-    "title": "Need a More Detailed Custom Workflow?",
-    "body": "Klirs is an open-source project aimed to reduce administrative burden for compliance personnel. If you'd like to get full access, reach out!",
-    "button": "Try it out!",
-    "buttonReachOut": "Reach out!"
+    "title": "Want a 20-minute walk-through?",
+    "body": "We're running pricing-validation calls with LV and EU compliance buyers through May. Book a 20-minute demo and we'll walk through your firm's specific use case — or run a real screening yourself in the interactive demo.",
+    "bookButton": "Book a 20-min demo",
+    "tryButton": "Try the interactive demo"
   },
   "footer": {
     "tagline": "Klirs — open-source AML screening",

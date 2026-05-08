@@ -9,8 +9,9 @@
     "eyebrow": "Atvērtā koda sankciju un klientu izpētes pārbaudes · AGPL-3.0",
     "title": "Automatizēta AML pārbaude.",
     "subhead": "Klirs ir atvērtā koda risinājums AML/KYC speciālistiem. Katra pārbaude piegādā avota lapas ekrānuzņēmumus ar laika zīmogu, pārredzamu riska novērtējumu un aizpildītu dokumentāciju.",
-    "ctaPrimary": "Pamēģini",
-    "ctaSecondary": "GitHub"
+    "ctaPrimary": "Mēģini interaktīvo demo",
+    "ctaBookDemo": "Piesakies 20 min demonstrācijai",
+    "ctaSource": "Avots GitHub"
   },
   "audit": {
     "title": "Katra rinda auditējama un pierādāma.",
@@ -48,10 +49,10 @@
     }
   },
   "cta": {
-    "title": "Vēlies pielāgotu risinājumu?",
-    "body": "Klirs ir atvērtā koda projekts, kas mazina atbilstības speciālistu administratīvo slogu. Ja vēlies pielāgotu risinājumu — sazinies!",
-    "button": "Pamēģini!",
-    "buttonReachOut": "Sazinies!"
+    "title": "Vēlies 20 minūšu demonstrāciju?",
+    "body": "Maijā rīkojam zvanus ar LV un ES atbilstības speciālistiem, lai precizētu cenas un funkcionalitāti. Piesakies 20 minūšu demonstrācijai, un kopā apspriedīsim tavas prakses specifiku — vai pamēģini reālu pārbaudi pats interaktīvajā demo.",
+    "bookButton": "Piesakies 20 min demonstrācijai",
+    "tryButton": "Mēģini interaktīvo demo"
   },
   "footer": {
     "tagline": "Klirs — atvērtā koda AML pārbaude",

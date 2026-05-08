@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Mail, Shield } from "lucide-react";
+import { Mail, Shield, Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 interface SearchParamsShape {
@@ -42,13 +42,30 @@ export default async function LoginPage({
             <span className="text-2xl font-bold text-white">Klirs</span>
           </div>
 
+          {/* First-time visitor escape ramp — promotes /demo from buried tertiary
+              to visible secondary CTA above the auth form. Persona-A research-mode
+              visitors land here from "Try it out" CTAs and need a way out that
+              isn't an email commit. (Funnel diagnostic 2026-05-07.) */}
+          <Link
+            href="/demo"
+            className="group flex items-center justify-between gap-3 mb-4 px-4 py-3 rounded-xl bg-emerald-500/5 border border-emerald-500/30 hover:bg-emerald-500/10 hover:border-emerald-500/60 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="text-sm text-emerald-200">
+                First time here? Try the interactive demo
+              </span>
+            </div>
+            <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+
           {/* Card */}
           <div className="bg-slate-900 rounded-2xl border border-white/10 p-8">
             <h1 className="text-xl font-semibold text-white text-center mb-2">
-              Compliance Screening Portal
+              Sign in to Klirs
             </h1>
             <p className="text-sm text-slate-400 text-center mb-6">
-              Automated KYC/AML screening across 8+ international databases
+              Automated KYC/AML screening across 7 international sources
             </p>
 
             {error && (
@@ -167,12 +184,6 @@ export default async function LoginPage({
           </div>
 
           <div className="text-center mt-6 space-y-2">
-            <Link
-              href="/demo"
-              className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-            >
-              View sample screening report &rarr;
-            </Link>
             <p className="text-xs text-slate-600">
               Powered by automated compliance screening technology
             </p>

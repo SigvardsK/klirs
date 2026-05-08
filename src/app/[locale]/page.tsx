@@ -11,6 +11,7 @@ import {
   Briefcase,
   Coins,
   Database,
+  Calendar,
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
@@ -19,8 +20,13 @@ import { routing } from "@/lib/i18n/routing";
 import LocaleSwitcher from "@/components/locale-switcher";
 import { ProductShowcase } from "@/components/product-showcase";
 
-const TRY_OUT_HREF = "/login";
+const DEMO_HREF = "/demo";
 const GITHUB_HREF = "https://github.com/SigvardsK/klirs";
+// Set NEXT_PUBLIC_BOOKING_URL on Railway to your Google Calendar appointment-scheduling link.
+// Mailto fallback ensures the CTA never 404s if the env var is missing.
+const BOOKING_URL =
+  process.env.NEXT_PUBLIC_BOOKING_URL ||
+  "mailto:sigvards.krongorns@gmail.com?subject=Book%20a%20Klirs%20demo";
 
 export default async function MarketingPage({
   params,
@@ -73,23 +79,32 @@ export default async function MarketingPage({
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <a
-                href={TRY_OUT_HREF}
+                href={DEMO_HREF}
                 className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-6 py-3 rounded-md transition-colors"
               >
                 {t("hero.ctaPrimary")}
                 <ArrowRight className="w-4 h-4" />
               </a>
               <a
-                href={GITHUB_HREF}
+                href={BOOKING_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 border border-white/15 hover:border-emerald-500/50 hover:text-emerald-400 px-6 py-3 rounded-md transition-colors"
+                className="inline-flex items-center gap-2 border border-emerald-500/40 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/70 text-emerald-300 hover:text-emerald-200 px-6 py-3 rounded-md transition-colors"
               >
-                <Code className="w-4 h-4" />
-                {t("hero.ctaSecondary")}
-                <ExternalLink className="w-3.5 h-3.5" />
+                <Calendar className="w-4 h-4" />
+                {t("hero.ctaBookDemo")}
               </a>
             </div>
+            <a
+              href={GITHUB_HREF}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-emerald-400 transition-colors"
+            >
+              <Code className="w-3.5 h-3.5" />
+              {t("hero.ctaSource")}
+              <ExternalLink className="w-3 h-3" />
+            </a>
           </div>
         </section>
 
@@ -241,17 +256,20 @@ export default async function MarketingPage({
             <p className="mt-4 text-slate-300 leading-relaxed">{t("cta.body")}</p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <a
-                href={TRY_OUT_HREF}
+                href={BOOKING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-6 py-3 rounded-md transition-colors"
               >
-                {t("cta.button")}
-                <ArrowRight className="w-4 h-4" />
+                <Calendar className="w-4 h-4" />
+                {t("cta.bookButton")}
               </a>
               <a
-                href="mailto:sigvards@krongorns.com"
+                href={DEMO_HREF}
                 className="inline-flex items-center gap-2 border border-white/15 hover:border-emerald-500/50 hover:text-emerald-400 px-6 py-3 rounded-md transition-colors"
               >
-                {t("cta.buttonReachOut")}
+                {t("cta.tryButton")}
+                <ArrowRight className="w-4 h-4" />
               </a>
             </div>
           </div>
