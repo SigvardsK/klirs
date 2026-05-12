@@ -3,20 +3,30 @@
     "brand": "Klirs",
     "signIn": "Sign in",
     "github": "GitHub",
-    "agpl": "AGPL-3.0"
+    "agpl": "AGPL-3.0",
+    "themeToggleToLight": "Switch to light mode",
+    "themeToggleToDark": "Switch to dark mode"
   },
   "hero": {
     "eyebrow": "Open-source AML/KYC screening · AGPL-3.0",
-    "title": "Audit-ready AML screening.",
-    "subhead": "Klirs is an open-source screening workflow for compliance buyers. Every screening carries timestamped source-page screenshots, a transparent risk score, and pre-filled documentation.",
-    "ctaPrimary": "Try the interactive demo",
-    "ctaBookDemo": "Book a 20-min demo",
+    "title": "Audit-ready AML screening, in a minute.",
+    "subhead": "Type a name. Get timestamped source-page evidence + a transparent risk score across 7 international databases. No sign-up.",
+    "formCTA": "Run screening",
+    "formSubmitting": "Starting…",
+    "formPlaceholderIndividual": "e.g. Jānis Bērziņš",
+    "formPlaceholderEntity": "e.g. AS Air Baltic Corporation",
+    "formEntityIndividual": "Individual",
+    "formEntityCompany": "Entity",
+    "formSampleLabel": "Try a sample:",
+    "formSampleClean": "Jānis Bērziņš",
+    "formSampleSanctioned": "Pjotrs Avens",
+    "formSampleEntity": "AS Air Baltic Corporation",
+    "formRateLimited": "You've used today's free trial allowance. Sign in to run more, or come back tomorrow.",
+    "formGenericError": "Couldn't start screening. Please try again — or sign in to track results.",
+    "learnMore": "Learn more about Klirs",
+    "orBookCall": "or book a 30-min consultation",
+    "ctaBookDemo": "Book a 30-min consultation",
     "ctaSource": "Source on GitHub"
-  },
-  "audit": {
-    "title": "Read every line that produced your evidence.",
-    "quote": "Read, run, and audit every line that produced your evidence.",
-    "body": "Klirs is licensed under <strong>AGPL-3.0</strong>."
   },
   "forWhom": {
     "title": "Who Klirs is for.",
@@ -49,10 +59,10 @@
     }
   },
   "cta": {
-    "title": "Want a 20-minute walk-through?",
-    "body": "We're running pricing-validation calls with LV and EU compliance buyers through May. Book a 20-minute demo and we'll walk through your firm's specific use case — or run a real screening yourself in the interactive demo.",
-    "bookButton": "Book a 20-min demo",
-    "tryButton": "Try the interactive demo"
+    "title": "Want to learn more?",
+    "body": "Book a 30-min consultation and we'll walk through your firm's specific use case — or try it yourself.",
+    "bookButton": "Book a 30-min consultation",
+    "tryButton": "Sign in"
   },
   "footer": {
     "tagline": "Klirs — open-source AML screening",

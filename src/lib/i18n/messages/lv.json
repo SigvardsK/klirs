@@ -3,20 +3,30 @@
     "brand": "Klirs",
     "signIn": "Pieslēgties",
     "github": "GitHub",
-    "agpl": "AGPL-3.0"
+    "agpl": "AGPL-3.0",
+    "themeToggleToLight": "Pārslēgt uz gaišo režīmu",
+    "themeToggleToDark": "Pārslēgt uz tumšo režīmu"
   },
   "hero": {
-    "eyebrow": "Atvērtā koda sankciju un klientu izpētes pārbaudes · AGPL-3.0",
-    "title": "Automatizēta AML pārbaude.",
-    "subhead": "Klirs ir atvērtā koda risinājums AML/KYC speciālistiem. Katra pārbaude piegādā avota lapas ekrānuzņēmumus ar laika zīmogu, pārredzamu riska novērtējumu un aizpildītu dokumentāciju.",
-    "ctaPrimary": "Mēģini interaktīvo demo",
-    "ctaBookDemo": "Piesakies 20 min demonstrācijai",
+    "eyebrow": "Atvērtā koda AML/KYC pārbaudes · AGPL-3.0",
+    "title": "Auditējama AML pārbaude — vienā minūtē.",
+    "subhead": "Ievadi vārdu. Saņem avota lapas pierādījumus ar laika zīmogu un caurskatāmu riska novērtējumu no 7 starptautiskām datubāzēm. Bez reģistrācijas.",
+    "formCTA": "Sākt pārbaudi",
+    "formSubmitting": "Sākam…",
+    "formPlaceholderIndividual": "piem. Jānis Bērziņš",
+    "formPlaceholderEntity": "piem. AS Air Baltic Corporation",
+    "formEntityIndividual": "Persona",
+    "formEntityCompany": "Uzņēmums",
+    "formSampleLabel": "Pamēģini paraugu:",
+    "formSampleClean": "Jānis Bērziņš",
+    "formSampleSanctioned": "Pjotrs Avens",
+    "formSampleEntity": "AS Air Baltic Corporation",
+    "formRateLimited": "Šodien izmēģinājuma limits ir sasniegts. Pieslēdzies, lai veiktu vairāk pārbaužu, vai atgriezies rīt.",
+    "formGenericError": "Neizdevās sākt pārbaudi. Mēģini vēlreiz vai pieslēdzies, lai saglabātu rezultātus.",
+    "learnMore": "Uzzini vairāk par Klirs",
+    "orBookCall": "vai piesakies 30 min konsultācijai",
+    "ctaBookDemo": "Piesakies 30 min konsultācijai",
     "ctaSource": "Avots GitHub"
-  },
-  "audit": {
-    "title": "Katra rinda auditējama un pierādāma.",
-    "quote": "Katra izpētes darbība izsekojama un caurskatāma.",
-    "body": "Klirs ir licencēts saskaņā ar <strong>AGPL-3.0</strong>."
   },
   "forWhom": {
     "title": "Kam Klirs ir paredzēts.",
@@ -49,10 +59,10 @@
     }
   },
   "cta": {
-    "title": "Vēlies 20 minūšu demonstrāciju?",
-    "body": "Maijā rīkojam zvanus ar LV un ES atbilstības speciālistiem, lai precizētu cenas un funkcionalitāti. Piesakies 20 minūšu demonstrācijai, un kopā apspriedīsim tavas prakses specifiku — vai pamēģini reālu pārbaudi pats interaktīvajā demo.",
-    "bookButton": "Piesakies 20 min demonstrācijai",
-    "tryButton": "Mēģini interaktīvo demo"
+    "title": "Vēlies uzzināt sīkāk?",
+    "body": "Piesakies 30 min konsultācijai, un kopā apspriedīsim tavas prakses specifiku — vai pamēģini pats.",
+    "bookButton": "Piesakies 30 min konsultācijai",
+    "tryButton": "Reģistrēties"
   },
   "footer": {
     "tagline": "Klirs — atvērtā koda AML pārbaude",

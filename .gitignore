@@ -61,3 +61,10 @@ supabase/.temp/
 # Transient i18n translation artifacts (regenerable via scripts/translate-passages.py)
 /src/lib/i18n/messages/lv.draft.json
 /src/lib/i18n/messages/lv.draft.review.md
+
+# Internal LV legal firm directory (raw firmas.lv-style scrape used for cold-outreach
+# enrichment; not for public repo). Also covers any parsed CSVs / shortlists
+# Claude generates from it.
+/legal-firms-lv
+/legal-firms-lv*
+/docs/sprint-2/outreach/legal-firms-lv-*

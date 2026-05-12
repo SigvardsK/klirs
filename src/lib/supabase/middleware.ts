@@ -33,12 +33,14 @@ export async function updateSession(request: NextRequest) {
   const isMarketingPath = pathname === "/" || /^\/lv(\/.*)?$/.test(pathname);
 
   // Allow access to marketing page (any locale), login, auth callback, demo
-  // (page + API routes), and API health check.
+  // (page + API routes), screen result pages (24h public per /api/demo gate),
+  // and API health check.
   const isPublicRoute =
     isMarketingPath ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/auth") ||
     pathname.startsWith("/demo") ||
+    pathname.startsWith("/screen") ||
     pathname.startsWith("/api/demo") ||
     pathname === "/api/health" ||
     pathname.startsWith("/api/test");

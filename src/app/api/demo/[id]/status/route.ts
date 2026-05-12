@@ -9,6 +9,11 @@ import { createClient } from "@supabase/supabase-js";
  * screenings via this surface, and trial rows past the retention window stop
  * resolving.
  *
+ * Returns `completed_checks` (full rows, including `screenshot_path`) so the
+ * LiveProgress UI can render the per-source waterfall + screenshots as each
+ * check completes — without waiting for the final /checks fetch. Empty array
+ * (NOT null) when no checks have completed yet (LR-WS-2026-029).
+ *
  * Stale-detection: same 5-min threshold as the authed endpoint. If the
  * fire-and-forget runner crashes, the row sits in `in_progress` forever; we
  * synthesize `stalled` so the UI can render a clean error instead of an
@@ -44,13 +49,16 @@ export async function GET(
     return NextResponse.json({ error: "Trial not found or expired" }, { status: 404 });
   }
 
-  const { data: latestCheck } = await supabase
+  const { data: completedChecksRaw } = await supabase
     .from("screening_checks")
-    .select("database_name, category, status, checked_at")
+    .select("*")
     .eq("screening_id", id)
-    .order("checked_at", { ascending: false })
-    .limit(1)
-    .single();
+    .order("checked_at", { ascending: true });
+
+  const completed_checks = completedChecksRaw ?? [];
+  const latestCheck = completed_checks.length
+    ? completed_checks[completed_checks.length - 1]
+    : null;
 
   let effectiveStatus = screening.status;
   let recoverable = false;
@@ -71,6 +79,14 @@ export async function GET(
     checks_completed: screening.checks_completed,
     checks_total: screening.checks_total,
     completed_at: screening.completed_at,
-    latest_check: latestCheck || null,
+    latest_check: latestCheck
+      ? {
+          database_name: latestCheck.database_name,
+          category: latestCheck.category,
+          status: latestCheck.status,
+          checked_at: latestCheck.checked_at,
+        }
+      : null,
+    completed_checks,
   });
 }

@@ -1,6 +1,6 @@
 import { getCurrentUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Shield, LogOut } from "lucide-react";
+import { Shield } from "lucide-react";
 import { SignOutButton } from "@/components/sign-out-button";
 
 export default async function DashboardLayout({
@@ -12,7 +12,12 @@ export default async function DashboardLayout({
   if (!user) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    // Force dark theme on dashboard subtree regardless of landing toggle state.
+    // Tailwind v4 @custom-variant dark + `.dark` class on this wrapper ensures
+    // any semantic-token-using component nested here resolves to the dark
+    // palette. Hardcoded slate-* classes on the dashboard surfaces are
+    // preserved for visual continuity.
+    <div className="dark min-h-screen bg-slate-950">
       {/* Header */}
       <header className="border-b border-white/10 bg-slate-900/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
