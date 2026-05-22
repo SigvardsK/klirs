@@ -110,6 +110,10 @@ export default async function MarketingPage({
               ctaSubmittingLabel={t("hero.formSubmitting")}
               entityIndividualLabel={t("hero.formEntityIndividual")}
               entityCompanyLabel={t("hero.formEntityCompany")}
+              entityHelper={t("hero.formEntityHelper")}
+              companyNudge={t("hero.formCompanyNudge")}
+              confirmButton={t("hero.formConfirmButton")}
+              confirmRecapTemplate={t("hero.formConfirmRecap", { name: "{name}", type: "{type}" })}
               sampleLabel={t("hero.formSampleLabel")}
               sampleCleanName={t("hero.formSampleClean")}
               sampleSanctionedName={t("hero.formSampleSanctioned")}

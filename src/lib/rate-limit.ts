@@ -19,7 +19,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { createHash } from "node:crypto";
 
-const DEMO_RUNS_PER_DAY = 1;
+const DEMO_RUNS_PER_DAY = 2;
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 
 function getAdminClient() {

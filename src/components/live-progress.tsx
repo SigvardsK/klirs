@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import {
   AlertCircle,
@@ -77,12 +78,34 @@ interface Props {
   screeningId: string;
   initialScreening: Screening;
   initialCompletedChecks: ScreeningCheck[];
+  /**
+   * Localized copy resolved server-side (the result page lives outside the
+   * [locale] segment, so strings are passed in rather than read via next-intl
+   * here). `freeLeftTemplate` is already plural-resolved against ?left=.
+   */
+  copy: ResultCopy;
+}
+
+export interface ResultCopy {
+  runAnother: string;
+  signIn: string;
+  themeToLight: string;
+  themeToDark: string;
+  /** Plural-resolved server-side, e.g. "1 free search left today — …". */
+  freeLeftTemplate: string;
+  /** "That was your last free search today. Sign in to run more." */
+  lastFree: string;
+  saveResultTitle: string;
+  saveResultBody: string;
+  bookDemoTitle: string;
+  bookDemoBody: string;
 }
 
 export function LiveProgress({
   screeningId,
   initialScreening,
   initialCompletedChecks,
+  copy,
 }: Props) {
   const [phase, setPhase] = useState<Phase>(() => {
     // Initial phase derived from server-side fetch — avoids a "flash of running"
@@ -179,42 +202,74 @@ export function LiveProgress({
   // Render
   // ──────────────────────────────────────────────────────────────────────
 
+  // C4: "Run another" link prefills the form with this screening's entity so a
+  // mis-set entity type costs only the second free search, not a dead end.
+  const runAnotherHref = buildRunAnotherHref(
+    initialScreening.entity_name,
+    initialScreening.entity_type
+  );
+
   if (phase.kind === "done") {
     return (
-      <ResultLayout entityName={phase.screening.entity_name}>
-        <PostResultCallouts />
+      <ResultLayout
+        entityName={phase.screening.entity_name}
+        runAnotherHref={runAnotherHref}
+        copy={copy}
+      >
+        <PostResultCallouts copy={copy} />
         <ScreeningViewer
           screening={phase.screening}
           checks={phase.checks}
           supabaseUrl={process.env.NEXT_PUBLIC_SUPABASE_URL || ""}
           demoMode={true}
         />
-        <PostResultCallouts />
+        <PostResultCallouts copy={copy} />
       </ResultLayout>
     );
   }
 
   if (phase.kind === "stalled") {
     return (
-      <ResultLayout entityName={initialScreening.entity_name}>
-        <StalledBanner />
+      <ResultLayout
+        entityName={initialScreening.entity_name}
+        runAnotherHref={runAnotherHref}
+        copy={copy}
+      >
+        <StalledBanner runAnotherHref={runAnotherHref} />
       </ResultLayout>
     );
   }
 
   if (phase.kind === "error") {
     return (
-      <ResultLayout entityName={initialScreening.entity_name}>
-        <ErrorBanner message={phase.message} />
+      <ResultLayout
+        entityName={initialScreening.entity_name}
+        runAnotherHref={runAnotherHref}
+        copy={copy}
+      >
+        <ErrorBanner message={phase.message} runAnotherHref={runAnotherHref} />
       </ResultLayout>
     );
   }
 
   return (
-    <ResultLayout entityName={initialScreening.entity_name}>
+    <ResultLayout
+      entityName={initialScreening.entity_name}
+      runAnotherHref={runAnotherHref}
+      copy={copy}
+    >
       <RunningProgress phase={phase} />
     </ResultLayout>
   );
+}
+
+/** C4 — prefill the landing form via ?name=&type= so a re-run costs one click. */
+function buildRunAnotherHref(
+  entityName: string,
+  entityType: "individual" | "company"
+): string {
+  const params = new URLSearchParams({ name: entityName, type: entityType });
+  return `/?${params.toString()}`;
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -223,9 +278,13 @@ export function LiveProgress({
 
 function ResultLayout({
   entityName,
+  runAnotherHref,
+  copy,
   children,
 }: {
   entityName: string;
+  runAnotherHref: string;
+  copy: ResultCopy;
   children: React.ReactNode;
 }) {
   return (
@@ -238,20 +297,20 @@ function ResultLayout({
           </Link>
           <div className="flex items-center gap-3 text-sm">
             <Link
-              href="/"
+              href={runAnotherHref}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              Run another
+              {copy.runAnother}
             </Link>
             <Link
               href="/login"
               className="inline-flex items-center gap-1 h-9 px-3 rounded-md border border-border bg-card hover:bg-muted transition-colors"
             >
-              Sign in
+              {copy.signIn}
             </Link>
             <ThemeToggle
-              toLightLabel="Switch to light mode"
-              toDarkLabel="Switch to dark mode"
+              toLightLabel={copy.themeToLight}
+              toDarkLabel={copy.themeToDark}
             />
           </div>
         </div>
@@ -592,7 +651,7 @@ function StatusChip({
   );
 }
 
-function StalledBanner() {
+function StalledBanner({ runAnotherHref }: { runAnotherHref: string }) {
   return (
     <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-6 space-y-3">
       <div className="flex items-center gap-3">
@@ -607,7 +666,7 @@ function StalledBanner() {
         original attempt counted toward today&apos;s trial limit.
       </p>
       <Link
-        href="/"
+        href={runAnotherHref}
         className="inline-flex items-center gap-1 h-9 px-3 rounded-md border border-amber-500/30 bg-card hover:bg-amber-500/10 text-sm font-medium transition-colors"
       >
         Run another
@@ -617,7 +676,13 @@ function StalledBanner() {
   );
 }
 
-function ErrorBanner({ message }: { message: string }) {
+function ErrorBanner({
+  message,
+  runAnotherHref,
+}: {
+  message: string;
+  runAnotherHref: string;
+}) {
   return (
     <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 space-y-3">
       <div className="flex items-center gap-3">
@@ -626,7 +691,7 @@ function ErrorBanner({ message }: { message: string }) {
       </div>
       <p className="text-sm text-muted-foreground">{message}</p>
       <Link
-        href="/"
+        href={runAnotherHref}
         className="inline-flex items-center gap-1 h-9 px-3 rounded-md border border-border bg-card hover:bg-muted text-sm font-medium transition-colors"
       >
         Run another
@@ -636,35 +701,80 @@ function ErrorBanner({ message }: { message: string }) {
   );
 }
 
-function PostResultCallouts() {
+/**
+ * B-UI — post-result signup nudge. Reads `?left=<remaining>` (set by the hero
+ * form on submit) and surfaces the free-search count as real content, not a
+ * bare status badge: a primary "save + sign in" carrot whose body line carries
+ * the live count, plus the book-a-call CTA. `left > 0` → "N free searches left
+ * today"; `left === 0` (or absent) → "last free search".
+ */
+function PostResultCallouts({ copy }: { copy: ResultCopy }) {
+  const searchParams = useSearchParams();
+  const leftParam = searchParams.get("left");
+  const left = leftParam !== null ? Number.parseInt(leftParam, 10) : null;
+  const hasLeft = left !== null && Number.isFinite(left) && left > 0;
+
+  // freeLeftTemplate is already plural-resolved server-side against ?left=;
+  // the client only chooses between the count line and the last-free line.
+  const freeSearchLine = hasLeft ? copy.freeLeftTemplate : copy.lastFree;
+
   return (
-    <div className="grid sm:grid-cols-2 gap-3">
-      <Link
-        href="/login"
-        className="flex items-start gap-3 p-4 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
+    <div className="space-y-3">
+      {/* Free-search count as content — differentiated weight: a filled accent
+          banner, not a muted badge. */}
+      <div
+        className={`flex items-start gap-3 rounded-lg border p-4 ${
+          hasLeft
+            ? "border-emerald-500/30 bg-emerald-500/10"
+            : "border-amber-500/40 bg-amber-500/10"
+        }`}
       >
-        <Sparkles className="w-5 h-5 text-primary mt-0.5" />
-        <div>
-          <p className="text-sm font-medium">Save this result + run more</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Sign in to keep evidence and export audit bundles
-          </p>
-        </div>
-      </Link>
-      <a
-        href={BOOKING_URL}
-        target={BOOKING_URL.startsWith("http") ? "_blank" : undefined}
-        rel={BOOKING_URL.startsWith("http") ? "noopener noreferrer" : undefined}
-        className="flex items-start gap-3 p-4 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
-      >
-        <Calendar className="w-5 h-5 text-primary mt-0.5" />
-        <div>
-          <p className="text-sm font-medium">Book a 20-min demo</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Walk through it with us — bring a name you actually want to screen
-          </p>
-        </div>
-      </a>
+        <Sparkles
+          className={`w-5 h-5 mt-0.5 shrink-0 ${
+            hasLeft
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-amber-600 dark:text-amber-400"
+          }`}
+        />
+        <p
+          className={`text-sm font-medium ${
+            hasLeft
+              ? "text-emerald-900 dark:text-emerald-100"
+              : "text-amber-900 dark:text-amber-100"
+          }`}
+        >
+          {freeSearchLine}
+        </p>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-3">
+        <Link
+          href="/login"
+          className="flex items-start gap-3 p-4 rounded-lg border border-border bg-card hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Sparkles className="w-5 h-5 text-primary mt-0.5" />
+          <div>
+            <p className="text-sm font-medium">{copy.saveResultTitle}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {copy.saveResultBody}
+            </p>
+          </div>
+        </Link>
+        <a
+          href={BOOKING_URL}
+          target={BOOKING_URL.startsWith("http") ? "_blank" : undefined}
+          rel={BOOKING_URL.startsWith("http") ? "noopener noreferrer" : undefined}
+          className="flex items-start gap-3 p-4 rounded-lg border border-border bg-card hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Calendar className="w-5 h-5 text-primary mt-0.5" />
+          <div>
+            <p className="text-sm font-medium">{copy.bookDemoTitle}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {copy.bookDemoBody}
+            </p>
+          </div>
+        </a>
+      </div>
     </div>
   );
 }

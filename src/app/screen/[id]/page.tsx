@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-import { LiveProgress } from "@/components/live-progress";
+import { getTranslations } from "next-intl/server";
+import { LiveProgress, type ResultCopy } from "@/components/live-progress";
 import { ScreenExpired } from "@/components/screen-expired";
 import type { Screening, ScreeningCheck } from "@/lib/types";
 import type { Metadata } from "next";
@@ -14,8 +15,10 @@ import type { Metadata } from "next";
  * (NOT a redirect — buyers need to see "this trial result expired" to
  * understand the 24h public-window contract).
  *
- * Locale-agnostic: the result page is read by both EN + LV visitors. Strings
- * for now are EN-only; LV i18n folds in once Phase 4 lands.
+ * Locale-agnostic route (lives outside the [locale] segment) but locale-aware
+ * copy: next-intl resolves the active locale from the request (cookie/header)
+ * via getTranslations, and the resolved strings are passed into <LiveProgress />
+ * as a `copy` bag (the client component cannot read next-intl server messages).
  */
 
 const RETENTION_HOURS = 24;
@@ -82,21 +85,45 @@ export async function generateMetadata({
 
 export default async function ScreenPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ left?: string }>;
 }) {
   const { id } = await params;
+  const { left: leftParam } = await searchParams;
   const fetched = await fetchInitial(id);
 
   if (!fetched) {
     return <ScreenExpired />;
   }
 
+  // Resolve the ICU-pluralized free-search line here, where next-intl can
+  // select the right plural form against the actual ?left= count. Client only
+  // decides freeLeft-vs-lastFree (it reads the same ?left= param).
+  const leftNum = Number.parseInt(leftParam ?? "", 10);
+  const t = await getTranslations();
+  const copy: ResultCopy = {
+    runAnother: t("result.runAnother"),
+    signIn: t("result.signIn"),
+    themeToLight: t("common.themeToggleToLight"),
+    themeToDark: t("common.themeToggleToDark"),
+    freeLeftTemplate: t("result.freeLeft", {
+      n: Number.isFinite(leftNum) ? leftNum : 0,
+    }),
+    lastFree: t("result.lastFree"),
+    saveResultTitle: t("result.saveResultTitle"),
+    saveResultBody: t("result.saveResultBody"),
+    bookDemoTitle: t("result.bookDemoTitle"),
+    bookDemoBody: t("result.bookDemoBody"),
+  };
+
   return (
     <LiveProgress
       screeningId={id}
       initialScreening={fetched.screening}
       initialCompletedChecks={fetched.initialCompletedChecks}
+      copy={copy}
     />
   );
 }

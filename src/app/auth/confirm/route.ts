@@ -18,6 +18,7 @@
  * Reference: https://supabase.com/docs/guides/auth/server-side/email-based-auth
  */
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { EmailOtpType } from "@supabase/supabase-js";
@@ -120,18 +121,31 @@ export async function GET(request: Request) {
 
     const name = user.user_metadata?.full_name || user.user_metadata?.name;
     const email = user.email;
+    // Funnel attribution: if this browser ran an anonymous demo, the
+    // first-party klirs_anon cookie is present — carry it into the profile so
+    // demo_search_events.anon_id joins to profiles.anon_id. Only set when the
+    // cookie exists; never overwrite a non-null anon_id with null.
+    const anonCookie = (await cookies()).get("klirs_anon")?.value;
+    const upsertPayload: {
+      id: string;
+      full_name: string;
+      email?: string;
+      anon_id?: string;
+    } = {
+      id: user.id,
+      full_name: name || email?.split("@")[0] || "User",
+      email,
+    };
+    if (anonCookie) {
+      upsertPayload.anon_id = anonCookie;
+    }
     // Admin client bypasses RLS. Payload is constrained to fields derived from
     // the verified getUser() result, so this is safe — and decouples the
     // post-auth metadata sync from RLS policy drift.
     const adminForUpsert = createAdminClient();
-    const { error: upsertError } = await adminForUpsert.from("profiles").upsert(
-      {
-        id: user.id,
-        full_name: name || email?.split("@")[0] || "User",
-        email,
-      },
-      { onConflict: "id" }
-    );
+    const { error: upsertError } = await adminForUpsert
+      .from("profiles")
+      .upsert(upsertPayload, { onConflict: "id" });
     if (upsertError) {
       console.error("[auth/confirm] profile_upsert_failed", {
         message: upsertError.message,

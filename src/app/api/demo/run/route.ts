@@ -29,10 +29,70 @@ import type { Person } from "@/lib/types";
 
 const MAX_NAME_LENGTH = 120;
 
+// First-party opaque visitor cookie for anonymized funnel telemetry. Holds a
+// uuid v4 minted server-side — NOT PII, no IP, no name. Joined to
+// profiles.anon_id at signup to compute search->signup conversion.
+const ANON_COOKIE = "klirs_anon";
+const ANON_COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
+
 interface RunRequest {
   name?: unknown;
   entityType?: unknown;
   turnstileToken?: unknown;
+  locale?: unknown;
+}
+
+/**
+ * Read the klirs_anon cookie from the raw request header (this route uses the
+ * Request/NextResponse API, not next/headers cookies()). Returns null if absent.
+ */
+function readAnonCookie(request: Request): string | null {
+  const cookieHeader = request.headers.get("cookie");
+  if (!cookieHeader) return null;
+  for (const part of cookieHeader.split(";")) {
+    const eq = part.indexOf("=");
+    if (eq === -1) continue;
+    const key = part.slice(0, eq).trim();
+    if (key === ANON_COOKIE) {
+      const val = part.slice(eq + 1).trim();
+      return val || null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Best-effort coarse locale ('en' | 'lv' | null). Resolution order:
+ *   1. explicit `locale` in the request body (frontend may pass it),
+ *   2. referer path segment (/lv vs /en),
+ *   3. Accept-Language header leading tag.
+ * Stored for cohort breakdown only — null is acceptable (LR-WS-2026-029:
+ * we record what we observed, never invent a default).
+ */
+function deriveLocale(request: Request, body: RunRequest): string | null {
+  const fromBody =
+    typeof body.locale === "string" ? body.locale.trim().toLowerCase() : "";
+  if (fromBody === "en" || fromBody === "lv") return fromBody;
+
+  const referer = request.headers.get("referer");
+  if (referer) {
+    try {
+      const path = new URL(referer).pathname;
+      if (/^\/lv(\/|$)/.test(path)) return "lv";
+      if (/^\/en(\/|$)/.test(path)) return "en";
+    } catch {
+      // ignore malformed referer
+    }
+  }
+
+  const acceptLang = request.headers.get("accept-language");
+  if (acceptLang) {
+    const tag = acceptLang.split(",")[0]?.trim().slice(0, 2).toLowerCase();
+    if (tag === "lv") return "lv";
+    if (tag === "en") return "en";
+  }
+
+  return null;
 }
 
 function getAdminClient() {
@@ -186,7 +246,33 @@ export async function POST(request: Request) {
     console.error("[demo-run] Background screening failed:", err);
   });
 
-  return NextResponse.json(
+  // Anonymized, GC-immune funnel telemetry. Resolve / mint the first-party
+  // visitor cookie, record ONE search event, and set the cookie on the SAME
+  // response we return. Telemetry failure must NEVER break the screening, so
+  // every step is best-effort (try/catch + console.error only).
+  let anonId = readAnonCookie(request);
+  const isNewAnon = !anonId;
+  if (!anonId) {
+    anonId = crypto.randomUUID();
+  }
+  const locale = deriveLocale(request, body);
+
+  try {
+    const { error: telemetryErr } = await supabase
+      .from("demo_search_events")
+      .insert({
+        anon_id: anonId,
+        entity_type: entityType,
+        locale,
+      });
+    if (telemetryErr) {
+      console.error("[demo-run] telemetry insert failed:", telemetryErr.message);
+    }
+  } catch (err) {
+    console.error("[demo-run] telemetry insert threw:", err);
+  }
+
+  const response = NextResponse.json(
     {
       screeningId: screening.id,
       totalChecks: calculateTotalChecks(job),
@@ -194,4 +280,22 @@ export async function POST(request: Request) {
     },
     { status: 202 }
   );
+
+  // Persist the anon cookie. httpOnly (server-only join key — never read in JS),
+  // secure, sameSite=lax, long-lived. Set even when it already existed to
+  // refresh maxAge for returning visitors.
+  response.cookies.set(ANON_COOKIE, anonId, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    maxAge: ANON_COOKIE_MAX_AGE,
+    path: "/",
+  });
+  if (isNewAnon) {
+    console.log(
+      JSON.stringify({ event: "demo.run.anon_minted", anonId, locale, entityType })
+    );
+  }
+
+  return response;
 }

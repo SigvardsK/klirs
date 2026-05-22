@@ -17,12 +17,18 @@
     "formPlaceholderEntity": "piem. AS Air Baltic Corporation",
     "formEntityIndividual": "Persona",
     "formEntityCompany": "Uzņēmums",
+    "formEntityHelper": "Pārbaudi uzņēmumu? Izvēlies Uzņēmums.",
+    "formCompanyNudge": "Izskatās pēc uzņēmuma — pārslēgt uz Uzņēmums?",
+    "formConfirmRecap": "Pārbaudām \"{name}\" kā {type}",
+    "formConfirmButton": "Apstiprināt un sākt",
     "formSampleLabel": "Pamēģini paraugu:",
     "formSampleClean": "Jānis Bērziņš",
     "formSampleSanctioned": "Pjotrs Avens",
     "formSampleEntity": "AS Air Baltic Corporation",
-    "formRateLimited": "Šodien izmēģinājuma limits ir sasniegts. Pieslēdzies, lai veiktu vairāk pārbaužu, vai atgriezies rīt.",
+    "formRateLimited": "Šodien izmantoji abas 2 bezmaksas pārbaudes. Pieslēdzies, lai veiktu vairāk, vai atgriezies rīt.",
     "formGenericError": "Neizdevās sākt pārbaudi. Mēģini vēlreiz vai pieslēdzies, lai saglabātu rezultātus.",
+    "formFreeLeft": "Šodien {n, plural, one {atlikusi # bezmaksas pārbaude} other {atlikušas # bezmaksas pārbaudes}} — pieslēdzies neierobežotai lietošanai",
+    "formLastFree": "Tā bija pēdējā šodienas bezmaksas pārbaude. Pieslēdzies, lai veiktu vairāk.",
     "learnMore": "Uzzini vairāk par Klirs",
     "orBookCall": "vai piesakies 30 min konsultācijai",
     "ctaBookDemo": "Piesakies 30 min konsultācijai",
@@ -71,6 +77,16 @@
   "metadata": {
     "title": "Klirs — Auditējama AML/KYC pārbaude",
     "description": "Auditējama AML/KYC pārbaude Latvijas un ES atbilstības speciālistiem. Atvērtā koda risinājums, pieejams klirs.eu."
+  },
+  "result": {
+    "runAnother": "Veikt vēl vienu",
+    "signIn": "Pieslēgties",
+    "freeLeft": "Šodien {n, plural, one {atlikusi # bezmaksas pārbaude} other {atlikušas # bezmaksas pārbaudes}} — pieslēdzies neierobežotai lietošanai",
+    "lastFree": "Tā bija pēdējā šodienas bezmaksas pārbaude. Pieslēdzies, lai veiktu vairāk.",
+    "saveResultTitle": "Saglabā šo rezultātu un veic vairāk",
+    "saveResultBody": "Pieslēdzies, lai saglabātu pierādījumus un eksportētu audita paketes",
+    "bookDemoTitle": "Piesakies 30 min konsultācijai",
+    "bookDemoBody": "Kopā to apskatīsim — paņem līdzi vārdu, ko tiešām vēlies pārbaudīt"
   },
   "screening": {},
   "annex": {}

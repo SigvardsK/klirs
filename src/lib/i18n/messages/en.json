@@ -16,13 +16,19 @@
     "formPlaceholderIndividual": "e.g. Jānis Bērziņš",
     "formPlaceholderEntity": "e.g. AS Air Baltic Corporation",
     "formEntityIndividual": "Individual",
-    "formEntityCompany": "Entity",
+    "formEntityCompany": "Company",
+    "formEntityHelper": "Screening a business? Choose Company.",
+    "formCompanyNudge": "Looks like a company — switch to Company?",
+    "formConfirmRecap": "Screening \"{name}\" as {type}",
+    "formConfirmButton": "Confirm & run",
     "formSampleLabel": "Try a sample:",
     "formSampleClean": "Jānis Bērziņš",
     "formSampleSanctioned": "Pjotrs Avens",
     "formSampleEntity": "AS Air Baltic Corporation",
-    "formRateLimited": "You've used today's free trial allowance. Sign in to run more, or come back tomorrow.",
+    "formRateLimited": "You've used today's 2 free searches. Sign in to run more, or come back tomorrow.",
     "formGenericError": "Couldn't start screening. Please try again — or sign in to track results.",
+    "formFreeLeft": "{n, plural, one {# free search} other {# free searches}} left today — sign in for unlimited",
+    "formLastFree": "That was your last free search today. Sign in to run more.",
     "learnMore": "Learn more about Klirs",
     "orBookCall": "or book a 30-min consultation",
     "ctaBookDemo": "Book a 30-min consultation",
@@ -71,6 +77,16 @@
   "metadata": {
     "title": "Klirs — Audit-ready AML screening",
     "description": "Audit-ready AML/KYC screening for Latvian and EU compliance. Open-source engine, hosted at klirs.eu."
+  },
+  "result": {
+    "runAnother": "Run another",
+    "signIn": "Sign in",
+    "freeLeft": "{n, plural, one {# free search} other {# free searches}} left today — sign in for unlimited",
+    "lastFree": "That was your last free search today. Sign in to run more.",
+    "saveResultTitle": "Save this result + run more",
+    "saveResultBody": "Sign in to keep evidence and export audit bundles",
+    "bookDemoTitle": "Book a 30-min consultation",
+    "bookDemoBody": "Walk through it with us — bring a name you actually want to screen"
   },
   "screening": {},
   "annex": {}
