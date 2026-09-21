@@ -26,9 +26,12 @@ import type { Page, Browser, BrowserContext } from "playwright";
 chromium.use(StealthPlugin());
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SEARCHABLE_DATABASES, ADVERSE_MEDIA_CONFIG, COMPANY_REGISTRY_CONFIG, type DbConfig } from "./db-configs";
+import { isLatviaJurisdiction } from "./jurisdiction";
 import { expandLvVariants } from "./name-variants";
 import { detectAdversarialInput, adversarialReason } from "./adversarial-input";
-import type { Person } from "./types";
+import type { Person, ScreeningCheck } from "./types";
+import { classifyWithJev, jevEnabled } from "./jev-verdict";
+import { runPool, createKeyedMutex } from "./check-pool";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabaseClient = SupabaseClient<any, any, any>;
@@ -105,6 +108,7 @@ function getAdminClient() {
  */
 export function calculateTotalChecks(job: ScreeningJob): number {
   let total = 0;
+  const isLatvia = isLatviaJurisdiction(job.jurisdiction);
   const searchTerms = buildSearchTerms(job);
   const personVariantCount = searchTerms.persons.reduce(
     (sum, p) => sum + p.variants.length,
@@ -113,6 +117,10 @@ export function calculateTotalChecks(job: ScreeningJob): number {
   const companyVariantCount = searchTerms.companyVariants.length;
 
   for (const db of SEARCHABLE_DATABASES) {
+    // Latvia-national sources (VID PEP) run only for LV screenings — keep this in
+    // lockstep with the runScreening loop so the progress total matches the rows
+    // actually written.
+    if (db.latviaOnly && !isLatvia) continue;
     if (db.personsOnly) {
       total += personVariantCount;
     } else if (db.companyOnly) {
@@ -128,8 +136,9 @@ export function calculateTotalChecks(job: ScreeningJob): number {
   // Adverse media: each person variant × 4 languages
   total += personVariantCount * 4;
 
-  // Company registry: 3 checks (search results + company detail + persons tab)
-  if (job.entityType === "company") {
+  // Company registry: 3 checks (search results + company detail + persons tab).
+  // Latvia-only source — skipped for non-LV jurisdictions.
+  if (job.entityType === "company" && isLatvia) {
     total += 3;
   }
 
@@ -186,6 +195,42 @@ function buildSearchTerms(job: ScreeningJob): SearchTerms {
  * Run the full screening process.
  * This is the main entry point — call from the API route.
  */
+/**
+ * Launch headless Chromium with a short retry. A momentarily resource-starved
+ * container can fail to fork Chromium's child processes — the browser main
+ * process starts, then aborts (SIGTRAP → "browser has been closed"). That is a
+ * transient condition: a brief backoff lets the box reclaim process/memory
+ * slots. Without a retry, one such blip fails the visitor's ENTIRE screening.
+ *
+ * This helper only builds and launches the browser — it does NOT touch the
+ * tri-state classifier, source indicators, or risk weighting, so the
+ * dual-affirmative correctness contract is unaffected.
+ */
+async function launchBrowserWithRetry(attempts = 3): Promise<Browser> {
+  const launchArgs = [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
+  ];
+  let lastErr: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await chromium.launch({ headless: true, args: launchArgs });
+    } catch (err) {
+      lastErr = err;
+      console.warn(
+        `[engine] chromium.launch attempt ${i + 1}/${attempts} failed:`,
+        err instanceof Error ? err.message : err
+      );
+      await sleep(1500 * (i + 1));
+    }
+  }
+  throw lastErr instanceof Error
+    ? lastErr
+    : new Error("chromium.launch failed after retries");
+}
+
 export async function runScreening(job: ScreeningJob): Promise<void> {
   const supabase = getAdminClient();
   const totalChecks = calculateTotalChecks(job);
@@ -200,10 +245,7 @@ export async function runScreening(job: ScreeningJob): Promise<void> {
   let checksCompleted = 0;
 
   try {
-    browser = await chromium.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+    browser = await launchBrowserWithRetry();
 
     const context = await browser.newContext({
       viewport: { width: 1280, height: 1024 },
@@ -212,190 +254,55 @@ export async function runScreening(job: ScreeningJob): Promise<void> {
 
     let page = await context.newPage();
     const terms = buildSearchTerms(job);
+    const isLatvia = isLatviaJurisdiction(job.jurisdiction);
 
-    // 1. Searchable databases
+    // 1 + 2. Searchable databases + adverse media — run CONCURRENTLY across
+    // sources (Phase B). Each check uses its own ephemeral browser context
+    // (session-safe for stateful sites like OFAC; heap bounded, so the old
+    // shared-page `recyclePage` workaround is unneeded here), bounded by
+    // CHECK_CONCURRENCY, with a per-source mutex so no single source is hit
+    // twice at once (rate-limit + session safety). Section 3 (UR SPA) stays
+    // sequential below. See DR-20260921 / check-pool.ts.
+    const checkConcurrency = Number(process.env.CHECK_CONCURRENCY ?? "4") || 4;
+    const perSource = createKeyedMutex();
+    const languages = ["LV", "EN", "ET", "RU"] as const;
+    const personVariants: string[] = terms.persons.flatMap((p) => p.variants);
+
+    const tasks: Array<() => Promise<void>> = [];
     for (const db of SEARCHABLE_DATABASES) {
-      const searchItems = getSearchItems(db, terms, job.entityType);
-
-      for (const searchTerm of searchItems) {
-        try {
-          const result = await runDatabaseCheck(page, db, searchTerm);
-          // Downgrade `hit` → `uncertain` for sources with known company-query
-          // noise (e.g., UK Sanctions' tokenised multi-word search). Evidence is
-          // preserved — screenshot, source URL, and search term all still insert —
-          // we just refuse to claim the match is confirmed.
-          if (
-            db.downgradeCompanyHits &&
-            job.entityType === "company" &&
-            result.status === "hit"
-          ) {
-            result.status = "uncertain";
-            result.reason =
-              `${db.name} uses tokenised multi-word search across all fields, so any 'hit' on a multi-word company name may be a tokenisation artefact (e.g. 'Corporation' matches 137 records). Manually review the screenshot before treating as a confirmed match.`;
-          }
-          const screenshotPath = await uploadScreenshot(
-            supabase,
-            job.screeningId,
-            page,
-            db,
-            searchTerm
-          );
-
-          await supabase.from("screening_checks").insert({
-            screening_id: job.screeningId,
-            database_name: db.name,
-            category: db.category,
-            search_term: searchTerm,
-            status: result.status,
-            details: formatCheckDetails(result),
-            screenshot_path: screenshotPath,
-            source_url: safePageUrl(page),
-            checked_at: new Date().toISOString(),
-          });
-        } catch (err) {
-          await supabase.from("screening_checks").insert({
-            screening_id: job.screeningId,
-            database_name: db.name,
-            category: db.category,
-            search_term: searchTerm,
-            status: "error",
-            details: formatErrorDetail(err),
-            source_url: safePageUrl(page),
-            checked_at: new Date().toISOString(),
-          });
-        }
-
-        checksCompleted++;
-        await supabase
-          .from("screenings")
-          .update({ checks_completed: checksCompleted })
-          .eq("id", job.screeningId);
-
-        // Rate limiting
-        await sleep(db.rateLimit);
+      // Latvia-national sources (VID PEP) only apply to a Latvian entity. For a
+      // non-LV jurisdiction they are not part of the screen (LR-WS-2026-029).
+      if (db.latviaOnly && !isLatvia) continue;
+      for (const searchTerm of getSearchItems(db, terms, job.entityType)) {
+        tasks.push(() =>
+          perSource(db.id, () =>
+            runSearchableCheckIsolated(browser!, supabase, job, db, searchTerm),
+          ),
+        );
       }
     }
-
-    // Recycle the page between major sections to release per-page DOM/JS heap
-    // accumulated across all the sanctions queries. Keeps the browser alive
-    // (re-launching is expensive) but resets the heap pressure that caused a
-    // company screening to die when UR's heavy SPA loaded on top of stacked
-    // sanctions-source memory.
-    page = await recyclePage(page, context);
-
-    // 2. Adverse media checks (DuckDuckGo with playwright-extra stealth)
-    // Fan out across every person variant (primary + aliases) in each language.
-    const languages = ["LV", "EN", "ET", "RU"] as const;
-    const personVariants: string[] = terms.persons.flatMap(p => p.variants);
     for (const personName of personVariants) {
       for (const lang of languages) {
-        try {
-          // Reset viewport to adverse-media default (1024) — previous db check
-          // may have left a taller viewport (UK/UR at 1400).
-          await page.setViewportSize({ width: 1280, height: ADVERSE_MEDIA_CONFIG.viewportHeight || 1024 });
-          const template = ADVERSE_MEDIA_CONFIG.searchTemplates?.[lang] || "";
-          const query = template.replace("{name}", personName);
-          const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
-
-          await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
-          await sleep(ADVERSE_MEDIA_CONFIG.waitMs);
-
-          // Validate page actually loaded search results (not error/CAPTCHA)
-          let pageText = await page.textContent("body").catch(() => "");
-          const isBlocked = !pageText || pageText.length < 200 ||
-            pageText.includes("Unexpected error") ||
-            pageText.includes("bots use DuckDuckGo") ||
-            pageText.includes("Select all squares") ||
-            pageText.includes("unusual traffic") ||
-            pageText.includes("not a robot");
-
-          // Retry once after 60s if blocked — DDG occasionally throws a CAPTCHA challenge
-          if (isBlocked) {
-            console.warn(`DDG blocked for ${personName} (${lang}), retrying in 60s...`);
-            await sleep(60000);
-            await page.reload({ waitUntil: "domcontentloaded" });
-            await sleep(ADVERSE_MEDIA_CONFIG.waitMs);
-
-            pageText = await page.textContent("body").catch(() => "");
-            const stillBlocked = !pageText || pageText.length < 200 ||
-              pageText.includes("Unexpected error") ||
-              pageText.includes("bots use DuckDuckGo") ||
-              pageText.includes("Select all squares");
-
-            if (stillBlocked) {
-              throw new Error("Search engine blocked automated access after retry");
-            }
-          }
-
-          // Inject evidence header
-          await injectEvidenceHeader(page, `Adverse Media (${lang})`, personName);
-
-          const screenshotPath = await uploadScreenshot(
-            supabase,
-            job.screeningId,
-            page,
-            { ...ADVERSE_MEDIA_CONFIG, filenamePrefix: `adverse_media_${lang.toLowerCase()}` },
-            personName
-          );
-
-          // Adverse media: classify via tri-state rather than defaulting to clear.
-          // DDG's "No results" indicator → clear; otherwise → uncertain (human review of
-          // the search results screenshot required). Defaulting to clear here is the
-          // exact failure mode the load-bearing classifier contract exists to prevent.
-          const adverseMediaResult = classifyResult(pageText || "", ADVERSE_MEDIA_CONFIG, personName);
-          await supabase.from("screening_checks").insert({
-            screening_id: job.screeningId,
-            database_name: `Adverse Media (${lang})`,
-            category: "adverse_media",
-            search_term: `${personName} (${lang})`,
-            status: adverseMediaResult.status,
-            details: formatCheckDetails(adverseMediaResult),
-            screenshot_path: screenshotPath,
-            source_url: safePageUrl(page),
-            checked_at: new Date().toISOString(),
-          });
-        } catch (err) {
-          // Take screenshot of error state for evidence
-          const errorScreenshotPath = await uploadScreenshot(
-            supabase,
-            job.screeningId,
-            page,
-            { ...ADVERSE_MEDIA_CONFIG, filenamePrefix: `adverse_media_${lang.toLowerCase()}` },
-            personName
-          ).catch(() => null);
-
-          await supabase.from("screening_checks").insert({
-            screening_id: job.screeningId,
-            database_name: `Adverse Media (${lang})`,
-            category: "adverse_media",
-            search_term: `${personName} (${lang})`,
-            status: "error",
-            details: formatErrorDetail(err),
-            screenshot_path: errorScreenshotPath,
-            source_url: safePageUrl(page),
-            checked_at: new Date().toISOString(),
-          });
-        }
-
-        checksCompleted++;
-        await supabase
-          .from("screenings")
-          .update({ checks_completed: checksCompleted })
-          .eq("id", job.screeningId);
-
-        await sleep(ADVERSE_MEDIA_CONFIG.rateLimit);
+        tasks.push(() =>
+          perSource(`adverse_${lang}`, () =>
+            runAdverseMediaCheckIsolated(browser!, supabase, job, personName, lang),
+          ),
+        );
       }
     }
 
-    // Recycle again before the heaviest section. UR's SPA pulls many tracker
-    // scripts; landing on it with a stale heap was the proximate cause of the
-    // 3-day company-screening stall.
-    if (job.entityType === "company") {
-      page = await recyclePage(page, context);
-    }
+    await runPool(tasks, checkConcurrency, async () => {
+      checksCompleted++;
+      await supabase
+        .from("screenings")
+        .update({ checks_completed: checksCompleted })
+        .eq("id", job.screeningId);
+    });
 
-    // 3. Company registry (SPA — 3 screenshots: search results + company detail + persons tab)
-    if (job.entityType === "company") {
+    // 3. Company registry (SPA — 3 screenshots: search results + company detail + persons tab).
+    // Uzņēmumu reģistrs is a Latvian national registry — LV company entities only.
+    // A non-LV company is screened against sanctions + adverse media only.
+    if (job.entityType === "company" && isLatvia) {
       // Prefer registration number when provided — it is unambiguous; many
       // company names are non-unique in the registry, so a name-search can
       // return the wrong entity. UR's single search input accepts either via
@@ -573,6 +480,149 @@ export async function runScreening(job: ScreeningJob): Promise<void> {
       .eq("id", job.screeningId);
   } finally {
     if (browser) await browser.close();
+  }
+}
+
+// ── Phase B: isolated per-check helpers ────────────────────────────────────
+// Each check runs in its OWN browser context so checks parallelise safely
+// (stateful sites like OFAC's ASP.NET don't collide on session state) and the
+// heap is bounded per check (making the old shared-page `recyclePage` workaround
+// unnecessary for these sections). Each persists its own row — success or error —
+// exactly as the sequential loop did. Progress counting is the caller's job.
+
+async function runSearchableCheckIsolated(
+  browser: Browser,
+  supabase: SupabaseClient,
+  job: ScreeningJob,
+  db: DbConfig,
+  searchTerm: string,
+): Promise<void> {
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 1024 },
+    locale: "en-US",
+  });
+  const page = await context.newPage();
+  try {
+    const result = await runDatabaseCheck(page, db, searchTerm);
+    // Downgrade `hit` → `uncertain` for sources with known company-query noise
+    // (e.g. UK Sanctions' tokenised multi-word search). Evidence still persists.
+    if (db.downgradeCompanyHits && job.entityType === "company" && result.status === "hit") {
+      result.status = "uncertain";
+      result.reason =
+        `${db.name} uses tokenised multi-word search across all fields, so any 'hit' on a multi-word company name may be a tokenisation artefact (e.g. 'Corporation' matches 137 records). Manually review the screenshot before treating as a confirmed match.`;
+    }
+    const screenshotPath = await uploadScreenshot(supabase, job.screeningId, page, db, searchTerm);
+    await supabase.from("screening_checks").insert({
+      screening_id: job.screeningId,
+      database_name: db.name,
+      category: db.category,
+      search_term: searchTerm,
+      status: result.status,
+      details: formatCheckDetails(result),
+      screenshot_path: screenshotPath,
+      source_url: safePageUrl(page),
+      checked_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    await supabase.from("screening_checks").insert({
+      screening_id: job.screeningId,
+      database_name: db.name,
+      category: db.category,
+      search_term: searchTerm,
+      status: "error",
+      details: formatErrorDetail(err),
+      source_url: safePageUrl(page),
+      checked_at: new Date().toISOString(),
+    });
+  } finally {
+    await sleep(db.rateLimit); // per-source pacing (held under the source mutex)
+    await context.close().catch(() => {});
+  }
+}
+
+async function runAdverseMediaCheckIsolated(
+  browser: Browser,
+  supabase: SupabaseClient,
+  job: ScreeningJob,
+  personName: string,
+  lang: "LV" | "EN" | "ET" | "RU",
+): Promise<void> {
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: ADVERSE_MEDIA_CONFIG.viewportHeight || 1024 },
+    locale: "en-US",
+  });
+  const page = await context.newPage();
+  try {
+    const template = ADVERSE_MEDIA_CONFIG.searchTemplates?.[lang] || "";
+    const query = template.replace("{name}", personName);
+    const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
+
+    await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await sleep(ADVERSE_MEDIA_CONFIG.waitMs);
+
+    let pageText = await page.textContent("body").catch(() => "");
+    const looksBlocked = (t: string | null) =>
+      !t || t.length < 200 ||
+      t.includes("Unexpected error") ||
+      t.includes("bots use DuckDuckGo") ||
+      t.includes("Select all squares") ||
+      t.includes("unusual traffic") ||
+      t.includes("not a robot");
+
+    if (looksBlocked(pageText)) {
+      console.warn(`DDG blocked for ${personName} (${lang}), retrying in 60s...`);
+      await sleep(60000);
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await sleep(ADVERSE_MEDIA_CONFIG.waitMs);
+      pageText = await page.textContent("body").catch(() => "");
+      if (looksBlocked(pageText)) {
+        throw new Error("Search engine blocked automated access after retry");
+      }
+    }
+
+    await injectEvidenceHeader(page, `Adverse Media (${lang})`, personName);
+    const screenshotPath = await uploadScreenshot(
+      supabase, job.screeningId, page,
+      { ...ADVERSE_MEDIA_CONFIG, filenamePrefix: `adverse_media_${lang.toLowerCase()}` },
+      personName,
+    );
+
+    // Tri-state string-match, refined by Jev when enabled (fallback-safe).
+    const deterministic = classifyResult(pageText || "", ADVERSE_MEDIA_CONFIG, personName);
+    const adverseMediaResult = jevEnabled()
+      ? await classifyWithJev(pageText || "", ADVERSE_MEDIA_CONFIG, personName, deterministic)
+      : deterministic;
+    await supabase.from("screening_checks").insert({
+      screening_id: job.screeningId,
+      database_name: `Adverse Media (${lang})`,
+      category: "adverse_media",
+      search_term: `${personName} (${lang})`,
+      status: adverseMediaResult.status,
+      details: formatCheckDetails(adverseMediaResult),
+      screenshot_path: screenshotPath,
+      source_url: safePageUrl(page),
+      checked_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    const errorScreenshotPath = await uploadScreenshot(
+      supabase, job.screeningId, page,
+      { ...ADVERSE_MEDIA_CONFIG, filenamePrefix: `adverse_media_${lang.toLowerCase()}` },
+      personName,
+    ).catch(() => null);
+    await supabase.from("screening_checks").insert({
+      screening_id: job.screeningId,
+      database_name: `Adverse Media (${lang})`,
+      category: "adverse_media",
+      search_term: `${personName} (${lang})`,
+      status: "error",
+      details: formatErrorDetail(err),
+      screenshot_path: errorScreenshotPath,
+      source_url: safePageUrl(page),
+      checked_at: new Date().toISOString(),
+    });
+  } finally {
+    await sleep(ADVERSE_MEDIA_CONFIG.rateLimit);
+    await context.close().catch(() => {});
   }
 }
 
@@ -887,9 +937,14 @@ async function runDatabaseCheck(
     // Inject evidence header
     await injectEvidenceHeader(page, db.name, searchTerm);
 
-    // Classify with tri-state precedence
+    // Classify with tri-state precedence (string-match), then refine via Jev when
+    // enabled. Jev is additive + fallback-safe: on any failure the string-match
+    // verdict is returned verbatim. Covers both the main run and rerunChecks.
     const pageText = (await page.textContent("body").catch(() => "")) || "";
-    return classifyResult(pageText, db, searchTerm);
+    const deterministic = classifyResult(pageText, db, searchTerm);
+    return jevEnabled()
+      ? await classifyWithJev(pageText, db, searchTerm, deterministic)
+      : deterministic;
 
   } catch (err) {
     console.error(`Check failed for ${db.name} (${searchTerm}):`, err);
@@ -1042,4 +1097,312 @@ function safePageUrl(page: Page): string | null {
   } catch {
     return null;
   }
+}
+
+// ===========================================================================
+// Granular re-run (Outlast MCP — 2026-09-21)
+// ---------------------------------------------------------------------------
+// Re-screens SPECIFIC checks by id, so a reviewer can refresh a single source
+// (or the company-registry block) without re-running the whole 40+ screen.
+//
+// runScreening above is left VERBATIM. The per-item logic here MIRRORS its
+// three sections deliberately (sanctions/PEP via runDatabaseCheck; adverse
+// media via the DuckDuckGo flow; company registry as a 3-screenshot block) so
+// the proven full-screen path carries zero regression risk from this feature.
+//
+// Row -> re-run path:
+//   category "company_registry"  -> registry block (re-runs all 3 UR rows once)
+//   category "adverse_media"     -> DuckDuckGo re-run for that person+language
+//   otherwise                    -> SEARCHABLE_DATABASES[name] via runDatabaseCheck
+// The caller regenerates the report after this returns.
+// ===========================================================================
+
+export interface RerunOutcome {
+  screening_id: string;
+  rerun: { check_id: string; database_name: string; old_status: string; new_status: string }[];
+  registry_block_rerun: boolean;
+  skipped: { check_id: string; database_name: string; reason: string }[];
+  errors: { check_id?: string; database_name?: string; message: string }[];
+}
+
+// Re-run one adverse-media (DuckDuckGo) query for a person + language. Mirrors
+// section 2 of runScreening. Returns the new verdict + fresh screenshot path.
+async function rerunAdverseMediaItem(
+  supabase: AnySupabaseClient,
+  page: Page,
+  screeningId: string,
+  personName: string,
+  lang: string
+): Promise<{ status: string; details: string | null; shot: string; sourceUrl: string | null }> {
+  await page.setViewportSize({ width: 1280, height: ADVERSE_MEDIA_CONFIG.viewportHeight || 1024 });
+  const template = ADVERSE_MEDIA_CONFIG.searchTemplates?.[lang] || ADVERSE_MEDIA_CONFIG.searchTemplates?.["EN"] || "";
+  const query = template.replace("{name}", personName);
+  const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
+  await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await sleep(ADVERSE_MEDIA_CONFIG.waitMs);
+  const isBlocked = (t: string | null) =>
+    !t || t.length < 200 ||
+    t.includes("Unexpected error") || t.includes("bots use DuckDuckGo") ||
+    t.includes("Select all squares") || t.includes("unusual traffic") || t.includes("not a robot");
+  let pageText = await page.textContent("body").catch(() => "");
+  if (isBlocked(pageText)) {
+    await sleep(60000);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await sleep(ADVERSE_MEDIA_CONFIG.waitMs);
+    pageText = await page.textContent("body").catch(() => "");
+    if (isBlocked(pageText)) throw new Error("Search engine blocked automated access after retry");
+  }
+  await injectEvidenceHeader(page, `Adverse Media (${lang})`, personName);
+  const shot = await uploadScreenshot(
+    supabase, screeningId, page,
+    { ...ADVERSE_MEDIA_CONFIG, filenamePrefix: `adverse_media_${lang.toLowerCase()}` },
+    personName
+  );
+  const res = classifyResult(pageText || "", ADVERSE_MEDIA_CONFIG, personName);
+  return { status: res.status, details: formatCheckDetails(res), shot, sourceUrl: safePageUrl(page) };
+}
+
+// Re-run the Latvian company-registry (UR) block: Search + Detail + Persons.
+// Mirrors section 3 of runScreening (minus the progress-counter updates, since a
+// re-run replaces existing rows rather than adding to the total). Inserts fresh
+// rows; the caller has already deleted the previous UR rows.
+async function rerunCompanyRegistry(
+  supabase: AnySupabaseClient,
+  page: Page,
+  job: { screeningId: string; entityName: string; registrationNumber: string | null }
+): Promise<void> {
+  const urSearchTerm = job.registrationNumber?.trim() || job.entityName;
+  try {
+    await page.setViewportSize({ width: 1280, height: COMPANY_REGISTRY_CONFIG.viewportHeight || 1024 });
+    await page.goto(COMPANY_REGISTRY_CONFIG.url, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await dismissCookies(page, COMPANY_REGISTRY_CONFIG.cookieSelector);
+    await page.waitForFunction(() => {
+      const input = document.querySelector('input[placeholder*="Uzņēmuma nosaukums"]');
+      return input && (input as HTMLElement).offsetHeight > 0;
+    }, { timeout: 15000 });
+    const searchInput = page.locator('input.DataSearch-input').first();
+    await searchInput.click();
+    await sleep(300);
+    await page.evaluate((term) => {
+      const input = document.querySelector('input.DataSearch-input') as HTMLInputElement;
+      if (!input) return;
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype, 'value'
+      )?.set;
+      nativeInputValueSetter?.call(input, term);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }, urSearchTerm);
+    await sleep(1000);
+    await searchInput.press("Enter");
+    await sleep(COMPANY_REGISTRY_CONFIG.waitMs);
+
+    await injectEvidenceHeader(page, "Company Registry — Search (Latvia)", urSearchTerm);
+    const searchScreenshot = await uploadScreenshot(
+      supabase, job.screeningId, page,
+      { ...COMPANY_REGISTRY_CONFIG, filenamePrefix: "ur_registry_search" }, urSearchTerm
+    );
+    await supabase.from("screening_checks").insert({
+      screening_id: job.screeningId,
+      database_name: `${COMPANY_REGISTRY_CONFIG.name} — Search`,
+      category: "company_registry",
+      search_term: urSearchTerm,
+      status: "clear",
+      screenshot_path: searchScreenshot,
+      source_url: safePageUrl(page),
+      checked_at: new Date().toISOString(),
+    });
+
+    const firstResult = page.locator('a.Anchor[href*="/legal-entity/"]').first();
+    if (await firstResult.isVisible({ timeout: 3000 })) {
+      await firstResult.click();
+      await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+      await sleep(5000);
+      await injectEvidenceHeader(page, "Company Registry — Detail (Latvia)", urSearchTerm);
+      const detailScreenshot = await uploadScreenshot(
+        supabase, job.screeningId, page,
+        { ...COMPANY_REGISTRY_CONFIG, filenamePrefix: "ur_registry_detail" }, urSearchTerm
+      );
+      await supabase.from("screening_checks").insert({
+        screening_id: job.screeningId,
+        database_name: `${COMPANY_REGISTRY_CONFIG.name} — Detail`,
+        category: "company_registry",
+        search_term: urSearchTerm,
+        status: "clear",
+        screenshot_path: detailScreenshot,
+        source_url: safePageUrl(page),
+        checked_at: new Date().toISOString(),
+      });
+
+      try {
+        const personsTab = page.locator('li.react-tabs__tab', { hasText: 'Personas' }).first();
+        if (await personsTab.isVisible({ timeout: 3000 })) {
+          await personsTab.click();
+          await sleep(2500);
+          await page.setViewportSize({ width: 1280, height: 1800 });
+          await sleep(500);
+          await injectEvidenceHeader(page, "Company Registry — Persons (Latvia)", urSearchTerm);
+          const personsScreenshot = await uploadScreenshot(
+            supabase, job.screeningId, page,
+            { ...COMPANY_REGISTRY_CONFIG, filenamePrefix: "ur_registry_persons" }, urSearchTerm
+          );
+          await supabase.from("screening_checks").insert({
+            screening_id: job.screeningId,
+            database_name: `${COMPANY_REGISTRY_CONFIG.name} — Persons`,
+            category: "company_registry",
+            search_term: urSearchTerm,
+            status: "clear",
+            screenshot_path: personsScreenshot,
+            source_url: safePageUrl(page),
+            checked_at: new Date().toISOString(),
+          });
+        }
+      } catch (err) {
+        console.warn("UR Persons tab capture failed (re-run):", err);
+      }
+    }
+  } catch (err) {
+    await supabase.from("screening_checks").insert({
+      screening_id: job.screeningId,
+      database_name: COMPANY_REGISTRY_CONFIG.name,
+      category: "company_registry",
+      search_term: urSearchTerm,
+      status: "error",
+      details: formatErrorDetail(err),
+      source_url: safePageUrl(page),
+      checked_at: new Date().toISOString(),
+    });
+  }
+}
+
+export async function rerunChecks(screeningId: string, checkIds: string[]): Promise<RerunOutcome> {
+  const supabase = getAdminClient();
+  const outcome: RerunOutcome = {
+    screening_id: screeningId, rerun: [], registry_block_rerun: false, skipped: [], errors: [],
+  };
+
+  const { data: scr, error: scrErr } = await supabase
+    .from("screenings").select("*").eq("id", screeningId).single();
+  if (scrErr || !scr) throw new Error(`Screening not found: ${screeningId}`);
+
+  const { data: rowData, error: rowErr } = await supabase
+    .from("screening_checks").select("*").eq("screening_id", screeningId).in("id", checkIds);
+  if (rowErr) throw new Error(`Failed to load checks: ${rowErr.message}`);
+  const rows = (rowData ?? []) as ScreeningCheck[];
+  if (rows.length === 0) throw new Error("No matching checks for the given ids.");
+
+  const configByName = new Map<string, DbConfig>();
+  for (const d of SEARCHABLE_DATABASES) configByName.set(d.name, d);
+
+  const isRegistry = (r: ScreeningCheck) =>
+    r.category === "company_registry" || r.database_name.startsWith(COMPANY_REGISTRY_CONFIG.name);
+  const isAdverse = (r: ScreeningCheck) =>
+    r.category === "adverse_media" || r.database_name.startsWith("Adverse Media");
+  const registryRows = rows.filter(isRegistry);
+  const adverseRows = rows.filter(isAdverse);
+  const simpleRows = rows.filter((r) => !isRegistry(r) && !isAdverse(r));
+
+  let browser: Browser | null = null;
+  try {
+    browser = await launchBrowserWithRetry();
+    const context = await browser.newContext({ viewport: { width: 1280, height: 1024 }, locale: "en-US" });
+    let page = await context.newPage();
+
+    // 1) Sanctions / PEP — reuse runDatabaseCheck exactly as the main run does.
+    for (const row of simpleRows) {
+      const db = configByName.get(row.database_name);
+      if (!db) {
+        outcome.skipped.push({ check_id: row.id, database_name: row.database_name, reason: "no matching source config" });
+        continue;
+      }
+      try {
+        const res = await runDatabaseCheck(page, db, row.search_term);
+        if (db.downgradeCompanyHits && scr.entity_type === "company" && res.status === "hit") {
+          res.status = "uncertain";
+          res.reason = `${db.name} uses tokenised multi-word search across all fields, so any 'hit' on a multi-word company name may be a tokenisation artefact. Manually review the screenshot before treating as a confirmed match.`;
+        }
+        const shot = await uploadScreenshot(supabase, screeningId, page, db, row.search_term);
+        await supabase.from("screening_checks").update({
+          status: res.status, details: formatCheckDetails(res), screenshot_path: shot,
+          source_url: safePageUrl(page), checked_at: new Date().toISOString(),
+        }).eq("id", row.id);
+        if (row.screenshot_path) {
+          await supabase.storage.from("evidence-screenshots").remove([row.screenshot_path]).catch(() => {});
+        }
+        outcome.rerun.push({ check_id: row.id, database_name: row.database_name, old_status: row.status, new_status: res.status });
+      } catch (err) {
+        await supabase.from("screening_checks").update({
+          status: "error", details: formatErrorDetail(err), source_url: safePageUrl(page), checked_at: new Date().toISOString(),
+        }).eq("id", row.id);
+        outcome.errors.push({ check_id: row.id, database_name: row.database_name, message: formatErrorDetail(err) });
+      }
+      await sleep(db.rateLimit);
+    }
+
+    // 2) Adverse media — DuckDuckGo re-run per person + language.
+    for (const row of adverseRows) {
+      const langMatch = row.database_name.match(/Adverse Media \(([^)]+)\)/);
+      const lang = langMatch?.[1] ?? "EN";
+      const personName = row.search_term.replace(/\s*\([^)]+\)\s*$/, "").trim();
+      try {
+        const r = await rerunAdverseMediaItem(supabase, page, screeningId, personName, lang);
+        await supabase.from("screening_checks").update({
+          status: r.status, details: r.details, screenshot_path: r.shot,
+          source_url: r.sourceUrl, checked_at: new Date().toISOString(),
+        }).eq("id", row.id);
+        if (row.screenshot_path) {
+          await supabase.storage.from("evidence-screenshots").remove([row.screenshot_path]).catch(() => {});
+        }
+        outcome.rerun.push({ check_id: row.id, database_name: row.database_name, old_status: row.status, new_status: r.status });
+      } catch (err) {
+        await supabase.from("screening_checks").update({
+          status: "error", details: formatErrorDetail(err), checked_at: new Date().toISOString(),
+        }).eq("id", row.id);
+        outcome.errors.push({ check_id: row.id, database_name: row.database_name, message: formatErrorDetail(err) });
+      }
+      await sleep(ADVERSE_MEDIA_CONFIG.rateLimit);
+    }
+
+    // 3) Company registry — block-level re-run (once), LV company only.
+    if (registryRows.length > 0) {
+      if (scr.entity_type === "company" && isLatviaJurisdiction(scr.jurisdiction)) {
+        try {
+          page = await recyclePage(page, context);
+          // Block-level: the registry re-runs as a whole 3-screenshot set, so
+          // clear ALL existing registry rows for this screening (not just the
+          // selected check_ids) before re-inserting — otherwise unselected
+          // Detail/Persons rows would duplicate against the fresh block.
+          const { data: allReg } = await supabase
+            .from("screening_checks")
+            .select("id, screenshot_path")
+            .eq("screening_id", screeningId)
+            .eq("category", "company_registry");
+          const oldShots = (allReg ?? [])
+            .map((r) => r.screenshot_path)
+            .filter((p): p is string => !!p);
+          if (oldShots.length) {
+            await supabase.storage.from("evidence-screenshots").remove(oldShots).catch(() => {});
+          }
+          await supabase
+            .from("screening_checks")
+            .delete()
+            .eq("screening_id", screeningId)
+            .eq("category", "company_registry");
+          await rerunCompanyRegistry(supabase, page, {
+            screeningId, entityName: scr.entity_name, registrationNumber: scr.registration_number,
+          });
+          outcome.registry_block_rerun = true;
+        } catch (err) {
+          outcome.errors.push({ database_name: COMPANY_REGISTRY_CONFIG.name, message: formatErrorDetail(err) });
+        }
+      } else {
+        for (const r of registryRows) {
+          outcome.skipped.push({ check_id: r.id, database_name: r.database_name, reason: "registry re-run applies only to a Latvian company" });
+        }
+      }
+    }
+  } finally {
+    if (browser) await browser.close();
+  }
+  return outcome;
 }

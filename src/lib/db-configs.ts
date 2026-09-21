@@ -36,6 +36,14 @@ export interface DbConfig {
   companyOnly?: boolean;
   personsOnly?: boolean;
   jurisdictionCheck?: boolean;
+  // Latvia-national source: queries a Latvian national registry (VID PEP, UR
+  // company registry) that has no meaning for a non-Latvian entity. Sources so
+  // flagged run ONLY when the screening's jurisdiction is LV; a non-LV
+  // jurisdiction (e.g. "EU") skips them entirely. Cross-border sources (global
+  // sanctions, adverse media) leave this unset and always run. See
+  // `isLatviaJurisdiction` in jurisdiction.ts — skipping is correct scoping, not
+  // a default-to-clear (LR-WS-2026-029).
+  latviaOnly?: boolean;
   searchTemplates?: Record<string, string>;
   urlSearch?: boolean;
   // When set, a `hit` result against a COMPANY entity is downgraded to `uncertain`
@@ -200,6 +208,7 @@ export const SEARCHABLE_DATABASES: DbConfig[] = [
     rateLimit: 3000,
     filenamePrefix: "vid_pnp",
     personsOnly: true,
+    latviaOnly: true,
     resultUrlIsLandingOnly: true,
   },
   {
@@ -219,6 +228,7 @@ export const SEARCHABLE_DATABASES: DbConfig[] = [
     rateLimit: 3000,
     filenamePrefix: "vid_vad",
     personsOnly: true,
+    latviaOnly: true,
     resultUrlIsLandingOnly: true,
   },
 ];
@@ -265,6 +275,7 @@ export const COMPANY_REGISTRY_CONFIG: DbConfig = {
   filenamePrefix: "ur_registry",
   companyOnly: true,
   jurisdictionCheck: true,
+  latviaOnly: true,
   // UR result cards + detail sections + Persons list all benefit from extra
   // viewport height to show the first 2–3 items without scrolling.
   viewportHeight: 1400,
